@@ -14,9 +14,16 @@
 #define STRUCT_INFO_H
 
 
+/*Helper Macros*/
+
+#define Malloc(T,size)  (T*)malloc(size*sizeof(T))
+#define Calloc(T,size)  (T*)calloc(size,sizeof(T))
+
 /* Constants */
 
 #define FILE_HEADER             "CS"
+#define INT_MAX_DIGIT           9
+#define INT_BYTE_SIZE           5                
 
 /**
  * Size of each fields in the metadata
