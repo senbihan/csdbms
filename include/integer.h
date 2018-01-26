@@ -26,6 +26,7 @@ struct __c_int{
     __c_int operator +(__c_int op);
     __c_int operator -(__c_int op);
     __c_int operator *(__c_int op);
+    void print();
 };
 
 
