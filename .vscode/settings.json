@@ -1,10 +1,6 @@
 {
     "files.associations": {
-        "array": "cpp",
-        "bitset": "cpp",
-        "initializer_list": "cpp",
-        "utility": "cpp",
-        "valarray": "cpp",
-        "ratio": "cpp"
+        "cstdlib": "cpp",
+        "cstdio": "cpp"
     }
 }
