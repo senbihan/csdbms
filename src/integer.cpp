@@ -10,6 +10,7 @@
  **/
 
 #include "integer.h"
+#include "aux_func.h"
 #include <cstdlib>
 #include <cstdio>
 using namespace std;
@@ -45,13 +46,13 @@ char* __c_int :: get_equivalent_number(char *number)
         if(number[i] == '-') break;
         ++j;
         if(k == 0){
-            f_byte |= int(number[i]-'0');
+            f_byte |= dig_to_byte(number[i]);
         }
         if(j & 1){
-            last_byte = int(number[i] - '0');
+            last_byte = dig_to_byte(number[i]);
         }
         else{
-            cur_byte = int(number[i] - '0');
+            cur_byte = dig_to_byte(number[i]);
             cur_byte <<= 4;
             cur_byte |= last_byte;
             temp_num[k--] = cur_byte;
