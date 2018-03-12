@@ -1,5 +1,6 @@
 #include<bits/stdc++.h>
-#include "integer.h"
+#include "writer.h"
+#include "reader.h"
 using namespace std;
 
 char* readInt_t(){   
@@ -11,11 +12,11 @@ char* readInt_t(){
         s[i++] = ch;
     }
     return s;
-}
+}   
 
 int main(void)
 {
-    char *s;
+    /*char *s;
     s = readInt_t();
     //printf("%s\n",s);
     //char *num = get_num(s);
@@ -27,6 +28,12 @@ int main(void)
     // 4256:                                     0100 0010  0101 0110
     // print the bytes of integer number
     i.print();
-    
+    */
+
+    create_db();
+
+    printf("\n\nREADING.....\n\n");
+    read_from_file();
+
     return 0;
 }

@@ -28,6 +28,15 @@ __c_int :: __c_int(char *number)
     byte_arr = get_equivalent_number(num);
 }
 
+/**
+ * Converts a number (max 10-digits) taken
+ * as a string
+ * to 5-byte representation
+ * 
+ * 
+ * @params : number (char *)
+ **/
+
 char* __c_int :: get_equivalent_number(char *number)
 {
     char *temp_num = Calloc(char, INT_BYTE_SIZE);
@@ -41,7 +50,7 @@ char* __c_int :: get_equivalent_number(char *number)
 
     unsigned j = 0;
     unsigned k = 4;
-    int n = strlen(number);
+    int n = strlen(number);     // length
     for(int i = n-1; i >= 0; i--){
         if(number[i] == '-') break;
         ++j;

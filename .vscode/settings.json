@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "cstdlib": "cpp",
-        "cstdio": "cpp"
+        "cstdio": "cpp",
+        "ratio": "cpp"
     }
 }
