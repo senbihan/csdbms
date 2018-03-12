@@ -43,8 +43,15 @@ void write_table_name()
 
 void write_data_head()
 {
+    //printf("writing at %d\n",ftell(fptr));
     DATA_HEAD = ftell(fptr) + DATA_END_SIZE + NO_COLUMNS * sizeof(struct Column);
     fwrite(&DATA_HEAD, DATA_HEAD_SIZE, 1, fptr);
+}
+
+void write_data_end()
+{
+    DATA_END = D_END;
+    fwrite(&DATA_END, DATA_END_SIZE, 1, fptr);
 }
 
 void write_size_of_records()
@@ -69,6 +76,7 @@ void write_to_file()
     write_table_name();
     write_size_of_records();
     write_data_head();
+    write_data_end();
     write_columns();
 }
 
@@ -127,8 +135,14 @@ void create_db()
         //if(type == 4)   REC_SIZE
     }
 
+    
     write_to_file();
-    ofile.close();
+    /*printf("Writing...\n");
+    printf("Data Head : %d\n",DATA_HEAD);
+    printf("No of Records : %d\n",NO_RECORDS);
+    printf("Record Size: %d\n",RECORD_SIZE);
+    printf("Data End: %d\n",DATA_END);
+    */
     fclose(fptr);
     printf("File written Successfully....\n");
 }
@@ -139,9 +153,42 @@ void create_db()
  * Insert Data
  * On existing file
  **/
-void insert_data(char *filename)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+void insert_data(const char *filename)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
 {
-    fptr = fopen(filename,"rwb+");
-    assert(fptr != NULL);
+    fstream fp (filename, fstream::in | fstream::binary);
+    fp.seekg(NO_REC_POSITION);
+    fp.read((char*)&NO_RECORDS,RECORD_NO_SIZE);
+    fp.seekg(REC_SIZE_POSITIOn);
+    fp.read((char*)&RECORD_SIZE,RECORD_SIZE_SIZE);
+    //fp.seekg(DATA_HEAD_POSITION);
+    fp.read((char*)&DATA_HEAD,DATA_END_SIZE);
+    //fp.seekg(DATA_END_POSITION);
+    fp.read((char*)&DATA_END,DATA_END_SIZE);
+    fp.close();
 
+    printf("Before Insertion: \n");
+    printf("Data Head : %d\n",DATA_HEAD);
+    printf("No of Records : %d\n",NO_RECORDS);
+    printf("Record Size: %d\n",RECORD_SIZE);
+    printf("Data End: %d\n",DATA_END);
+    fp.open(filename, fstream::out | fstream::binary);
+    fp.seekp(DATA_END);
+
+    {
+        // insert rows
+        
+        NO_RECORDS++;
+    }
+
+    fp.seekg(DATA_END_POSITION);
+    DATA_END = D_END;
+    
+    printf("After Insertion: \n");
+    printf("Data Head : %d\n",DATA_HEAD);
+    printf("No of Records : %d\n",NO_RECORDS);
+    printf("Record Size: %d\n",RECORD_SIZE);
+    printf("Data End: %d\n",DATA_END);
+    
+    fp.write((char*)&DATA_END,DATA_END_SIZE);
+    fp.close();
 }

@@ -31,9 +31,10 @@ int main(void)
     */
 
     create_db();
+    insert_data("student");
+    //printf("\n\nREADING.....\n\n");
+    //read_from_file();
 
-    printf("\n\nREADING.....\n\n");
-    read_from_file();
 
     return 0;
 }

@@ -55,6 +55,12 @@ void read_data_head()
     fread(&DATA_HEAD,DATA_HEAD_SIZE,1,frptr);
 }
 
+void read_data_end()
+{
+    assert(frptr != NULL);
+    fread(&DATA_END,DATA_END_SIZE,1,frptr);
+}
+
 int get_type_int(char type)
 {
     return ((112 & type) >> 5) + 1;
@@ -82,6 +88,8 @@ void read_from_file()
     printf("Each Record Size: %d\n",RECORD_SIZE);
     read_data_head();
     printf("Data Head : %d\n",DATA_HEAD);
+    read_data_end();
+    printf("Data End : %d\n",DATA_END);
 
 
     col = Malloc(struct Column, NO_COLUMNS);

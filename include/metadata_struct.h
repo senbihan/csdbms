@@ -44,6 +44,7 @@
 #define DATA_HEAD_SIZE          4
 #define DATA_END_SIZE           4
 
+
 /* Variable Portion */
 
 #define COLUMN_DETAILS_SIZE     32
@@ -75,6 +76,14 @@
 #define INDEX_COL_SIZE          1   // 0 : logically absent, NZ : Index of column
 #define AUTO_INC_SIZE           5
 #define MISC_SIZE               8
+
+// derived
+#define NO_REC_POSITION     FILE_HEADER_SIZE
+#define NO_COL_POSITIOn     NO_REC_POSITION + RECORD_NO_SIZE
+#define TBL_NAME_POSITIOn   NO_COL_POSITIOn + COLUMN_NO_SIZE
+#define REC_SIZE_POSITIOn   TBL_NAME_POSITIOn + TABLE_NAME_SIZE
+#define DATA_HEAD_POSITION  REC_SIZE_POSITIOn + RECORD_SIZE_SIZE
+#define DATA_END_POSITION   DATA_HEAD_POSITION + DATA_HEAD_SIZE
 
 
 struct Column
