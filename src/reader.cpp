@@ -4,12 +4,10 @@
 using namespace std;
 
 FILE *frptr;
-int *DATA_TYPES;
 
-
-void open_file(char *filename)
+void open_file(const char *filename)
 {
-    frptr = fopen(filename,"rb");
+    frptr = fopen(filename,"rb+");
     if(frptr == NULL)   ERR_MESG("reader : File cannot be opened or doesnot exist!");
 }
 
@@ -26,6 +24,7 @@ int check_validity()
 void read_record_no()
 {
     assert(frptr != NULL);
+    fseek(frptr,NO_REC_POSITION,SEEK_SET);
     fread(&NO_RECORDS,RECORD_NO_SIZE,1,frptr);
 }
 
@@ -66,30 +65,28 @@ int get_type_int(char type)
     return ((112 & type) >> 5) + 1;
 }
 
-void read_from_file()
+void read_from_file(const char *filename)
 {
-    char file_name[TABLE_NAME_SIZE];
     //printf("Enter filename to be read: \n");
-    scanf("%s",file_name);
-    open_file(file_name);
+    //scanf("%s",file_name);
+    open_file(filename);
 
     if(!check_validity())
         ERR_MESG("reader : file format is not valid!");
-    printf("File format is valid. Read successfully!\n");
 
     read_record_no();
-    printf("File Details: \n\n");
-    printf("Records : %d\n",NO_RECORDS);
+    //printf("File Details: \n\n");
+    //printf("Records : %d\n",NO_RECORDS);
     read_column_no();
-    printf("Columns : %d\n",NO_COLUMNS);
+    //printf("Columns : %d\n",NO_COLUMNS);
     read_table_name();
-    printf("Table Name : %s\n",TABLE_NAME);
+    //printf("Table Name : %s\n",TABLE_NAME);
     read_record_size();
-    printf("Each Record Size: %d\n",RECORD_SIZE);
+    //printf("Each Record Size: %d\n",RECORD_SIZE);
     read_data_head();
-    printf("Data Head : %d\n",DATA_HEAD);
+    //printf("Data Head : %d\n",DATA_HEAD);
     read_data_end();
-    printf("Data End : %d\n",DATA_END);
+    //printf("Data End : %d\n",DATA_END);
 
 
     col = Malloc(struct Column, NO_COLUMNS);
@@ -102,8 +99,8 @@ void read_from_file()
 
     for(int i = 0 ; i < NO_COLUMNS ; i++){
         DATA_TYPES[i] = get_type_int(col[i].data_type);
-        col[i].print_col();
+        //col[i].print_col();
     }
-
+    printf("Reading Complete.....\n");
     fclose(frptr);
 }

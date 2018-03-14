@@ -4,12 +4,7 @@
 #include <cstring>
 #include "metadata_struct.h"
 
-
-void open_file(char *filename);
-int check_validity();
-void read_column_no();
-void read_record_no();
-void read_from_file();
-void read_table_name();
+extern int  *DATA_TYPES;
+void read_from_file(const char *filename);
 
 #endif

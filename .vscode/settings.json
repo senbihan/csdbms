@@ -3,6 +3,7 @@
         "cstdlib": "cpp",
         "cstdio": "cpp",
         "ratio": "cpp",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "cstring": "cpp"
     }
 }

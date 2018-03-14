@@ -27,6 +27,7 @@
 
 #define INT_MAX_DIGIT           9
 #define INT_BYTE_SIZE           5                
+#define MAX_INTEGER             (int(1e10)-1)
 
 /**
  * Size of each fields in the metadata
@@ -86,6 +87,9 @@
 #define DATA_END_POSITION   DATA_HEAD_POSITION + DATA_HEAD_SIZE
 
 
+#define D_END        DATA_HEAD + (NO_RECORDS * RECORD_SIZE)
+
+
 struct Column
 {
     char    col_name[COLUMN_NAME_SIZE];
@@ -94,13 +98,13 @@ struct Column
     int     size; // 1 byte rep will be added later
 
 
-    void print_col(){
+    /*void print_col(){
         printf("\n");
         printf("Col Name : %s\n",col_name);
         printf("Col Index: %d\n",index);
         printf("Data Type: %d\n",data_type);
         printf("Size : %d\n",size);
-    }
+    }*/
 };
 
 
