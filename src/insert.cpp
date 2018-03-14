@@ -47,8 +47,9 @@ void insert_data(const char *filename, int num_ins = 1)
                 fwrite(dest,sizeof(char),255,fp);
             }
         }
+        NO_RECORDS++;
+        assert(NO_RECORDS < MAX_RECORDS);
     }
-    NO_RECORDS += num_ins;
     fseek(fp,NO_REC_POSITION,SEEK_SET);
     fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
     DATA_END = D_END;

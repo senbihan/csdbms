@@ -28,7 +28,7 @@
 #define INT_MAX_DIGIT           9
 #define INT_BYTE_SIZE           5                
 #define MAX_INTEGER             (int(1e10)-1)
-
+#define MAX_RECORDS             2048
 /**
  * Size of each fields in the metadata
  * written in Bytes
