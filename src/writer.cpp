@@ -64,7 +64,7 @@ void write_size_of_records()
  */
 void write_columns()
 {
-    fwrite(col, sizeof(struct Column), NO_COLUMNS , fptr);       
+    fwrite(col, sizeof(struct Column), NO_COLUMNS , fptr);
 }
 
 void write_to_file()
@@ -109,7 +109,7 @@ void create_db()
     data_types = Malloc(int, NO_COLUMNS);
     assert(col != NULL && data_types != NULL);
     int type, cons;
-
+    PRIMARY_KEY_COL_NO = -1;
     for(int i = 0 ; i < NO_COLUMNS; i++)
     {
         //printf("Enter Column Name: ");
@@ -118,23 +118,28 @@ void create_db()
         //printf("Enter Value Type: \n");
         //printf("\n1. Number \n2. Double \n3. String \n4. Date \n5. Time \n");
         scanf("%d",&type);
-        //printf("Constraint : \n1. Primary Key \n2. Not Null \n3. Auto INCR \n");
         data_types[i] = type;
+        //printf("Constraint : \n1. Primary Key \n2. Not Null \n3. Auto INCR \n");
         scanf("%d",&cons);
+        if(cons == 1){
+            if(PRIMARY_KEY_COL_NO == -1)
+                PRIMARY_KEY_COL_NO = i;
+            else
+                ERR_MESG("Only 1 Primary Key can be assigned");
+        }   
         // make 1 Byte rep of type and constraint;
         char data_type = get_type(type, cons);
         col[i].data_type = data_type;
-        //only one primary key check to be implemented
-        //printf("Size of data \n");
         scanf("%d",&col[i].size);
         if(type == 1)   assert(col[i].size <= 9); // +1e9
 
-        if(type == 1)   RECORD_SIZE += sizeof(int);
-        //if(type == 2)   REC_SIZE += 0;        
-        if(type == 3)   RECORD_SIZE += 255 * sizeof(char); // char of size 255
-        //if(type == 4)   REC_SIZE
+        RECORD_SIZE += TYPE_SIZE[data_types[i]];
     }
 
+    // seek upto RECORD_SIZE, you get the prev pointer
+    // Advance PTR_SIZE, get the next pointer
+
+    TOTAL_RECORD_SIZE = RECORD_SIZE + PTR_SIZE;
     
     write_to_file();
     fclose(fptr);

@@ -29,6 +29,17 @@
 #define INT_BYTE_SIZE           5                
 #define MAX_INTEGER             (int(1e10)-1)
 #define MAX_RECORDS             2048
+#define MAX_COLUMNS             10
+#define STR_MAX_SIZE            255
+#define BLOCK_SIZE              (1 << 11)
+#define PTR_SIZE                4
+
+/* Dataypes maps */
+#define INTEGER                 1
+#define STRING                  2
+#define DOUBLE                  3
+#define DATE                    4
+#define TIME                    5
 /**
  * Size of each fields in the metadata
  * written in Bytes
@@ -45,7 +56,6 @@
 #define DATA_HEAD_SIZE          4
 #define DATA_END_SIZE           4
 
-
 /* Variable Portion */
 
 #define COLUMN_DETAILS_SIZE     32
@@ -55,11 +65,11 @@
 // first 3-bits : data type, next 3-bits: Constraint info
 /**
  *  Datatypes: 
- *  int     :   000
- *  double  :   001
- *  string  :   010
- *  date    :   011
- *  time    :   100
+ *  int     :   001
+ *  double  :   010
+ *  string  :   011
+ *  date    :   100
+ *  time    :   101
  * 
  * Constriants:
  *  primary :   001

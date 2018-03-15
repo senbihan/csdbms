@@ -1,6 +1,6 @@
 IDIR =./include
 CC=gcc
-CXX=g++
+CXX=g++-7 -std=c++17
 ODIR=./obj/
 SRC=./src/
 BIN=./bin/

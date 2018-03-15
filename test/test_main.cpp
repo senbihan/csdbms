@@ -32,14 +32,12 @@ int main(void)
     i.print();
     */
 
-    //create_db();
+    create_db();
     //show_schema(file);
     //printf("\n\nREADING.....\n\n");
     //read_from_file();
-    //insert_data(file,5);
-    //show_schema(file);
-    show_data(file);
-    insert_data(file,1);
+    insert_data(file,5);
+    show_schema(file);
     show_data(file);
     return 0;
 }

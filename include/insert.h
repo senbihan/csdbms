@@ -2,6 +2,8 @@
 #define INSERT_H
 
 #include "metadata_struct.h"
+#include <variant>
+#include <unordered_map>
 
 extern int             NO_RECORDS;
 extern int             NO_COLUMNS;
@@ -10,10 +12,14 @@ extern int             RECORD_SIZE;
 extern int              DATA_HEAD;
 extern int              DATA_END;
 extern struct Column   *col;
-extern std::string      types[5] ;//= {"INTEGER", "DOUBLE", "STRING", "DATE", "TIME"};
-extern int              TYPE_SIZE[5];
+extern std::string      types[6] ;//= {"INTEGER", "DOUBLE", "STRING", "DATE", "TIME"};
+extern int              TYPE_SIZE[6];
+extern int             PRIMARY_KEY_COL_NO;
+
+extern std::unordered_map<std::variant<int,char*>,int> hash_table;
 
 void show_schema(const char *);
+void build_hash_table(const char *filename);
 void insert_data(const char *, int);
 void show_data(const char *);
 

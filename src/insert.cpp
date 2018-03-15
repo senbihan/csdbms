@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 #include "reader.h"
 #include "insert.h"
-
 using namespace std;
 
 void show_schema(const char *filename)
@@ -18,7 +17,17 @@ void show_schema(const char *filename)
         printf("\n");
     }
     printf("\nNO of Records : %d\n",NO_RECORDS);
+    printf("Primary Key : %s\n",col[PRIMARY_KEY_COL_NO].col_name);
     printf("----------------------------------------\n");
+}
+
+void build_hash_table(const char *filename)
+{
+    FILE *fp = fopen(filename, "r+");
+    fseek(fp,DATA_HEAD,SEEK_SET);
+    for(int i = 0 ; i < NO_RECORDS ; i++){
+
+    }   
 }
 
 void insert_data(const char *filename, int num_ins = 1)
@@ -26,27 +35,43 @@ void insert_data(const char *filename, int num_ins = 1)
     printf("\nINSERTION : Opening file.... %s\n",filename);
     read_from_file(filename);
     FILE *fp = fopen(filename, "r+");
+
+    // read the data just to create the HASH_TABLE
+    //if(hash_table.empty() && NO_RECORDS > 0)
+    //    build_hash_table(filename);
+    ////////////////////////////////////////////////
     fseek(fp,DATA_END,SEEK_SET);
 
+    char *dest = (char*)malloc(255);
+    char *blank = (char*)malloc(BLOCK_SIZE - TOTAL_RECORD_SIZE);
+    assert(dest != NULL && blank != NULL);
+    int int_data;
     int times = num_ins;
     while(times--){
-        char *dest = (char*)malloc(255);
-        assert(dest != NULL);
-        int int_data;
         for(int i = 0 ; i < NO_COLUMNS; i++)
         {
             //fread(dest,TYPE_SIZE[DATA_TYPES[i]],1,stdin);
             if(DATA_TYPES[i] == 1){          
                 scanf("%d",&int_data);
                 assert(int_data <= MAX_INTEGER);
+                if(PRIMARY_KEY_COL_NO == i){
+
+                }
                 fwrite(&int_data,int(sizeof(int)),1,fp);
             }
             else if(DATA_TYPES[i] == 3){
                 scanf("%s",dest);
                 assert(strlen(dest) <= 255);
+                if(PRIMARY_KEY_COL_NO == i){
+                    
+                }
                 fwrite(dest,sizeof(char),255,fp);
             }
         }
+        // seek upto RECORD_SIZE, you get the prev pointer
+        // Advance PTR_SIZE, get the next pointer
+
+        fwrite(blank,BLOCK_SIZE-TOTAL_RECORD_SIZE,1,fp);
         NO_RECORDS++;
         assert(NO_RECORDS < MAX_RECORDS);
     }
@@ -55,7 +80,9 @@ void insert_data(const char *filename, int num_ins = 1)
     DATA_END = D_END;
     fseek(fp,DATA_END_POSITION,SEEK_SET);
     fwrite(&DATA_END,DATA_END_SIZE,1,fp);
-    printf("%d row inserted.\n",num_ins);
+    printf("%d row inserted.\n",num_ins-times);
+    free(dest);
+    free(blank);
     fclose(fp);
 }
 
@@ -84,8 +111,9 @@ void show_data(const char *filename)
            }
         }
         printf("\n");
+        fseek(fp,BLOCK_SIZE-TOTAL_RECORD_SIZE,SEEK_CUR);
     }
-
+    free(dest);
     fclose(fp);
 }
 

@@ -65,6 +65,17 @@ int get_type_int(char type)
     return ((112 & type) >> 5) + 1;
 }
 
+int get_const_int(char type)
+{
+    return ((28 & type) >> 2);
+}
+
+void read_columns()
+{
+    fread(col, sizeof(struct Column), NO_COLUMNS , frptr); 
+}
+
+
 void read_from_file(const char *filename)
 {
     //printf("Enter filename to be read: \n");
@@ -94,13 +105,17 @@ void read_from_file(const char *filename)
     DATA_TYPES = Malloc(int,NO_COLUMNS);
     assert(DATA_TYPES != NULL);
 
-    // read all column details to col[]
-    fread(col,sizeof(struct Column),NO_COLUMNS,frptr);
+    
+    read_columns();
+    PRIMARY_KEY_COL_NO = -1;
 
     for(int i = 0 ; i < NO_COLUMNS ; i++){
         DATA_TYPES[i] = get_type_int(col[i].data_type);
+        if(get_const_int(col[i].data_type))
+            PRIMARY_KEY_COL_NO = i;
         //col[i].print_col();
     }
+
     printf("Reading Complete.....\n");
     fclose(frptr);
 }
