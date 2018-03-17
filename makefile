@@ -7,8 +7,8 @@ BIN=./bin/
 TST=./test/
 
 # test
-test : test_main.cpp aux_func.o reader.o writer.o insert.o
-	$(CXX) -g -Wall -o $(BIN)$@ $(TST)test_main.cpp $(ODIR)aux_func.o $(ODIR)reader.o $(ODIR)writer.o $(ODIR)insert.o -I $(IDIR)
+test : test_main.cpp aux_func.o reader.o writer.o operations.o
+	$(CXX) -g -Wall -o $(BIN)$@ $(TST)test_main.cpp $(ODIR)aux_func.o $(ODIR)reader.o $(ODIR)writer.o $(ODIR)operations.o -I $(IDIR)
 
 integer.o:
 	$(CXX) -c $(SRC)integer.cpp -I $(IDIR)
@@ -26,9 +26,9 @@ writer.o:
 	$(CXX) -c $(SRC)writer.cpp -I $(IDIR)
 	mv writer.o $(ODIR)
 
-insert.o:
-	$(CXX) -c $(SRC)insert.cpp -I $(IDIR)
-	mv insert.o $(ODIR)
+operations.o:
+	$(CXX) -c $(SRC)operations.cpp -I $(IDIR)
+	mv operations.o $(ODIR)
 
 
 test_main.cpp: 

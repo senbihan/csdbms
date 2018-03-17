@@ -44,7 +44,9 @@ void write_table_name()
 void write_data_head()
 {
     //printf("writing at %d\n",ftell(fptr));
-    DATA_HEAD = ftell(fptr) + DATA_HEAD_SIZE + DATA_END_SIZE + NO_COLUMNS * sizeof(struct Column);
+    DATA_HEAD = ftell(fptr) + DATA_HEAD_SIZE + DATA_END_SIZE ;
+    DATA_HEAD += sizeof(int);   // storing last recordNO
+    DATA_HEAD += NO_COLUMNS * sizeof(struct Column);
     fwrite(&DATA_HEAD, DATA_HEAD_SIZE, 1, fptr);
 }
 
@@ -57,6 +59,11 @@ void write_data_end()
 void write_size_of_records()
 {
     fwrite(&RECORD_SIZE,RECORD_SIZE_SIZE,1,fptr);
+}
+
+void write_last_rec_no()
+{
+    fwrite(&LAST_REC_NO,sizeof(int),1,fptr);
 }
 
 /**
@@ -77,6 +84,7 @@ void write_to_file()
     write_size_of_records();
     write_data_head();
     write_data_end();
+    write_last_rec_no();
     write_columns();
 }
 
@@ -107,9 +115,11 @@ void create_db()
 
     col = Malloc(struct Column, NO_COLUMNS);
     data_types = Malloc(int, NO_COLUMNS);
+    CUM_POS = Malloc(int,NO_COLUMNS);
     assert(col != NULL && data_types != NULL);
     int type, cons;
     PRIMARY_KEY_COL_NO = -1;
+    LAST_REC_NO = 0;
     for(int i = 0 ; i < NO_COLUMNS; i++)
     {
         //printf("Enter Column Name: ");
@@ -134,12 +144,15 @@ void create_db()
         if(type == 1)   assert(col[i].size <= 9); // +1e9
 
         RECORD_SIZE += TYPE_SIZE[data_types[i]];
+        CUM_POS[i] = i == 0 ? 0 : CUM_POS[i-1] + TYPE_SIZE[data_types[i]];
     }
 
-    // seek upto RECORD_SIZE, you get the prev pointer
-    // Advance PTR_SIZE, get the next pointer
-
-    TOTAL_RECORD_SIZE = RECORD_SIZE + PTR_SIZE;
+    // seek upto RECORD_SIZE
+    // get the next pointer
+    //printf("RECORD SIZE: %d\n",RECORD_SIZE);
+    TOTAL_RECORD_SIZE = RECORD_SIZE + 2 * PTR_SIZE;
+    //printf("RECORD SIZE with pointer: %d\n",TOTAL_RECORD_SIZE);
+    //printf("EXTRA SIZE : %d\n",BLOCK_SIZE - TOTAL_RECORD_SIZE);
     
     write_to_file();
     fclose(fptr);

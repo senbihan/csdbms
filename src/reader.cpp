@@ -75,6 +75,11 @@ void read_columns()
     fread(col, sizeof(struct Column), NO_COLUMNS , frptr); 
 }
 
+void read_last_rec_no()
+{
+    fread(&LAST_REC_NO,sizeof(int),1,frptr);
+}
+
 
 void read_from_file(const char *filename)
 {
@@ -98,7 +103,8 @@ void read_from_file(const char *filename)
     //printf("Data Head : %d\n",DATA_HEAD);
     read_data_end();
     //printf("Data End : %d\n",DATA_END);
-
+    read_last_rec_no();
+    //printf("Last record no: %d\n",LAST_REC_NO);
 
     col = Malloc(struct Column, NO_COLUMNS);
     assert(col != NULL);

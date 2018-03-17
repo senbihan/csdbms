@@ -18,8 +18,10 @@ int             DATA_END;
 struct Column   *col;
 int             *DATA_TYPES;
 std::string     types[6] = {"", "INTEGER", "DOUBLE", "STRING", "DATE", "TIME"};
-int             TYPE_SIZE[6]   = {0, sizeof(int), sizeof(double), sizeof(char*), 0 , 0};
+int             TYPE_SIZE[6]   = {0, sizeof(int), sizeof(double), STR_MAX_SIZE, 0 , 0};
 int             PRIMARY_KEY_COL_NO;
+int             *CUM_POS;
+int             LAST_REC_NO;
 
 std::unordered_map<std::variant<int,char*>,int> hash_table;
 

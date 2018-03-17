@@ -1,7 +1,7 @@
 #include<bits/stdc++.h>
 #include "writer.h"
 #include "reader.h"
-#include "insert.h"
+#include "operations.h"
 using namespace std;
 
 char* readInt_t(){   
@@ -33,11 +33,13 @@ int main(void)
     */
 
     create_db();
-    //show_schema(file);
-    //printf("\n\nREADING.....\n\n");
-    //read_from_file();
-    insert_data(file,5);
     show_schema(file);
+    insert_data(file,5);
+    show_data(file);
+    insert_data(file,3);
+    show_data(file);
+    delete_data(file,2);
+    delete_data(file,7);
     show_data(file);
     return 0;
 }
