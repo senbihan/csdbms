@@ -23,7 +23,7 @@ extern int             TYPE_SIZE[6]  ; //= {0, sizeof(int), sizeof(double), size
 extern int             PRIMARY_KEY_COL_NO;
 extern int             *CUM_POS;
 extern int             LAST_REC_NO;
-extern std::map<char*,int, cmp_str> COL_NT;
+extern std::map<const char*,int, cmp_str> COL_NT;
 
 void write_to_file();
 char* create_db();

@@ -32,7 +32,7 @@ int             LAST_REC_NO;
 int             IS_READ;
 
 std::unordered_map<std::variant<int,char*>,int> hash_table;
-std::map<char*,int, cmp_str> COL_NT;
+std::map<const char*,int, cmp_str> COL_NT;
 
 
 

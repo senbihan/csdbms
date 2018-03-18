@@ -111,7 +111,7 @@ void insert_data(const char *filename, int num_ins = 1)
  *          conditions (Hashmap) : if empty equivalent to SELECT *
  * 
  */
-vector<int> select_data(const char* filename, FILE *fp, map<char*,variant<int,char*>, cmp_str >cond)
+vector<int> select_data(const char* filename, FILE *fp, map<const char*,variant<int,char*>, cmp_str >cond)
 {
     if(!IS_READ){
         printf("\nSELECT_DATA : Opening file.... %s\n",filename);
@@ -121,15 +121,6 @@ vector<int> select_data(const char* filename, FILE *fp, map<char*,variant<int,ch
     //FILE *fp = fopen(filename, "r");
     assert(fp != NULL);
     vector<int>record_numbers;
-    //printf("inside select\n");
-    //system("read n");
-    /*
-    vector<pair<int,int>>seek_size;
-    for(int i = 0 ; i < NO_COLUMNS ; i++)
-    {
-        if(cond.find(col[i].col_name) != cond.end())
-            seek_size.push_back(make_pair(i,CUM_POS[i]);
-    }*/
 
     fseek(fp,DATA_HEAD,SEEK_SET);
     int int_data;
@@ -138,9 +129,9 @@ vector<int> select_data(const char* filename, FILE *fp, map<char*,variant<int,ch
     int blockNo = 1;
     // revise
     do{
-        int flag;
-        for(int j = 0 ; j < NO_COLUMNS; j++){
-            flag = 1;
+        int flag = 1;
+        for(int j = 0 ; j < NO_COLUMNS; j++)
+        {
             if(DATA_TYPES[j] == 1){          
                 fread(&int_data,sizeof(int),1,fp);
                 if(cond.find(col[j].col_name) != cond.end()){
@@ -167,7 +158,6 @@ vector<int> select_data(const char* filename, FILE *fp, map<char*,variant<int,ch
         if(next == 0)   break;  // end of data
         blockNo = next;
         fseek(fp,BLOCK_START(next),SEEK_SET);
-        printf("\n");
     }while(true);
 
     free(dest);
@@ -208,7 +198,7 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
     NO_RECORDS--;
 }
 
-void delete_data(char *filename, map<char*,variant<int,char*>, cmp_str >cond)
+void delete_data(char *filename, map<const char*,variant<int,char*>, cmp_str >cond)
 {
     FILE *fp = fopen(filename, "r+");
     vector<int>record_no = select_data(filename, fp, cond);
@@ -225,7 +215,7 @@ void delete_data(char *filename, map<char*,variant<int,char*>, cmp_str >cond)
  *          conditions (Hashmap) : if empty equivalent to SELECT *
  * 
  */
-void show_data(const char *filename, map<char*,variant<int,char*>, cmp_str >cond)
+void show_data(const char *filename, map<const char*,variant<int,char*>, cmp_str >cond)
 {
     if(!IS_READ){
         printf("\nSHOW_DATA : Opening file.... %s\n",filename);
@@ -235,18 +225,16 @@ void show_data(const char *filename, map<char*,variant<int,char*>, cmp_str >cond
         printf("No Data In this Table\n");
         return ;
     }
-    printf("inside show data...\n");
-    system("read n");
-    for(int i = 0 ; i < NO_COLUMNS; i++)
-        printf("%-12s",col[i].col_name);
-    printf("\n");
-    printf("----------------------------------------------------------\n");
     FILE *fp = fopen(filename, "r");
     assert(fp != NULL);
     int int_data;
     char *dest = Malloc(char,255);
     if(cond.empty()){
         // No condition show all
+        for(int i = 0 ; i < NO_COLUMNS; i++)
+            printf("%-12s",col[i].col_name);
+        printf("\n");
+        printf("----------------------------------------------------------\n");
         fseek(fp,DATA_HEAD,SEEK_SET);
         int prev, next;
         do{
@@ -273,11 +261,18 @@ void show_data(const char *filename, map<char*,variant<int,char*>, cmp_str >cond
     }
     else{
         vector<int>rec_no = select_data(filename,fp,cond);
-        printf("got returned from selection\n");
+        //printf("got returned from selection\n");
         //system("read n");
+        if(rec_no.size() == 0){
+            printf("No records found!\n");
+            return ;
+        }
+        for(int i = 0 ; i < NO_COLUMNS; i++)
+            printf("%-12s",col[i].col_name);
+        printf("\n");
+        printf("----------------------------------------------------------\n");
         for(int r : rec_no){
-            printf("rec no : %d\n",r);
-            fseek(fp,BLOCK_NO(r),SEEK_SET);
+            fseek(fp,BLOCK_START(r),SEEK_SET);
             for(int j = 0 ; j < NO_COLUMNS; j++){
                 if(DATA_TYPES[j] == 1){          
                     fread(&int_data,sizeof(int),1,fp);
@@ -288,6 +283,7 @@ void show_data(const char *filename, map<char*,variant<int,char*>, cmp_str >cond
                     printf("%-12s",dest);
                 }
             }
+            printf("\n");
         }
     }
     free(dest);

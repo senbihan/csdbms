@@ -30,9 +30,9 @@ void print_menu()
 void start_session()
 {
     print_menu();
-    map<char*,variant<int,char*>, cmp_str >cond;
+    map<const char*,variant<int,char*>, cmp_str >cond;
     int choice, i, c, int_data;
-    char *name = Malloc(char,255);
+    //char *name = Malloc(char,255);
     char *dest = Malloc(char,255);
     char *file = Malloc(char,255);
     bool show = true;
@@ -80,20 +80,22 @@ void start_session()
                 printf("\nSHOWING DATA: \n");
                 printf("Number of conditions: ");
                 scanf("%d",&c);
-                while(c--){
+                while(c--)
+                {
                     printf("Enter {COLUMN NAME, VALUE}\n");
-                    scanf("%s",name);
+                    string s;
+                    cin >> s;
                     assert(!COL_NT.empty());
-                    if(COL_NT.find(name) == COL_NT.end())
-                        ERR_MESG("no column of this name");
-                    if(COL_NT[name] == INTEGER){
+                    if(COL_NT.find(s.c_str()) == COL_NT.end())
+                        ERR_MESG("NO column of this name\n");
+                    if(COL_NT[s.c_str()] == INTEGER){
                         scanf("%d",&int_data);
-                        cond.insert(make_pair(name,int_data));
+                        cond.insert(make_pair(s.c_str(),int_data));
                     }
-                    else if(COL_NT[name] == STRING){
+                    else if(COL_NT[s.c_str()] == STRING){
                         scanf("%s",dest);
-                        cond.insert(make_pair(name,dest));
-                    }
+                        cond.insert(make_pair(s.c_str(),dest));
+                    }   
                 }
                 show_data(file,cond);
                 cond.clear();
