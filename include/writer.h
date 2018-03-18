@@ -17,8 +17,9 @@ extern int             TYPE_SIZE[6]  ; //= {0, sizeof(int), sizeof(double), size
 extern int             PRIMARY_KEY_COL_NO;
 extern int             *CUM_POS;
 extern int             LAST_REC_NO;
+
 void write_to_file();
-void create_db();
+char* create_db();
 
 
 #endif //

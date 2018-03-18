@@ -22,7 +22,7 @@ int             TYPE_SIZE[6]   = {0, sizeof(int), sizeof(double), STR_MAX_SIZE, 
 int             PRIMARY_KEY_COL_NO;
 int             *CUM_POS;
 int             LAST_REC_NO;
-
+int             IS_READ;
 std::unordered_map<std::variant<int,char*>,int> hash_table;
 
 

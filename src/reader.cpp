@@ -12,12 +12,11 @@ void open_file(const char *filename)
 }
 
 //check if the file is actually in the correct format
-int check_validity()
+int check_validity(FILE *fp)
 {
-    assert(frptr != NULL);
+    assert(fp != NULL);
     char *dest = Malloc(char,FILE_HEADER_SIZE);
-    memset(dest,0,sizeof(dest));
-    fread(dest,sizeof(char),FILE_HEADER_SIZE,frptr);
+    fread(dest,sizeof(char),FILE_HEADER_SIZE,fp);
     return (strcmp("CS",dest) == 0);
 }
 
@@ -87,7 +86,7 @@ void read_from_file(const char *filename)
     //scanf("%s",file_name);
     open_file(filename);
 
-    if(!check_validity())
+    if(!check_validity(frptr))
         ERR_MESG("reader : file format is not valid!");
 
     read_record_no();
@@ -121,7 +120,7 @@ void read_from_file(const char *filename)
             PRIMARY_KEY_COL_NO = i;
         //col[i].print_col();
     }
-
+    IS_READ = 1;
     printf("Reading Complete.....\n");
     fclose(frptr);
 }

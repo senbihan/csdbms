@@ -1,7 +1,5 @@
-#include<bits/stdc++.h>
-#include "writer.h"
-#include "reader.h"
-#include "operations.h"
+#include <bits/stdc++.h>
+#include "user_interface.h"
 using namespace std;
 
 char* readInt_t(){   
@@ -17,7 +15,6 @@ char* readInt_t(){
 
 int main(void)
 {
-    char file[] = "student";
     /*char *s;
     s = readInt_t();
     //printf("%s\n",s);
@@ -32,14 +29,7 @@ int main(void)
     i.print();
     */
 
-    create_db();
-    show_schema(file);
-    insert_data(file,5);
-    show_data(file);
-    insert_data(file,3);
-    show_data(file);
-    delete_data(file,2);
-    delete_data(file,7);
-    show_data(file);
+    start_session();
+
     return 0;
 }

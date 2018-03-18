@@ -5,9 +5,10 @@ using namespace std;
 
 void show_schema(const char *filename)
 {
-    printf("\nSHOW_SCHEMA : Opening file.... %s\n",filename);
-    read_from_file(filename);
-
+    if(!IS_READ){
+        printf("\nSHOW_SCHEMA : Opening file.... %s\n",filename);
+        read_from_file(filename);
+    }
     printf("Relation Schema: \n");
     printf("----------------------------------------\n");
     for(int i = 0 ; i < NO_COLUMNS; i++){
@@ -32,12 +33,13 @@ void build_hash_table(const char *filename)
 
 void insert_data(const char *filename, int num_ins = 1)
 {
-    printf("\nINSERTION : Opening file.... %s\n",filename);
-    read_from_file(filename);
+    if(!IS_READ){
+        printf("\nINSERTION : Opening file.... %s\n",filename);
+        read_from_file(filename);
+    }
     FILE *fp = fopen(filename, "r+");
     assert(fp != NULL);
     int int_data;
-    int nval = 0;
     char *dest = Malloc(char,255);
     char *blank = (char*)calloc(BLOCK_SIZE - TOTAL_RECORD_SIZE, sizeof(char));
     assert(dest != NULL && blank != NULL);
@@ -60,10 +62,6 @@ void insert_data(const char *filename, int num_ins = 1)
                 fwrite(dest,sizeof(char),255,fp);
             }
         }
-        // write previous
-        // fwrite(&(counter-1),sizeof(int),1,fp);
-        // write next
-        int prev;
         if(counter == 1)
         {
             //go to the last record and write its next
@@ -100,10 +98,12 @@ void insert_data(const char *filename, int num_ins = 1)
     fclose(fp);
 }
 
-void delete_data(const char *filename, int recNo)
+void delete_data_from_rec(const char *filename, int recNo)
 {
-    printf("\nDELETE_DATA : Opening file.... %s\n",filename);
-    read_from_file(filename);
+    if(!IS_READ){
+        printf("\nDELETE_DATA : Opening file.... %s\n",filename);
+        read_from_file(filename);
+    }
     if(NO_RECORDS == 0) {
         printf("No Data In this Table\n");
         return ;
@@ -127,10 +127,31 @@ void delete_data(const char *filename, int recNo)
     fclose(fp);    
 }
 
+/*
+*   returns record number based on conditions
+*/
+int select_data(char *filename, map<char*,variant<int,char*> >cond)
+{
+    if(!IS_READ){
+        printf("\nSELECT_DATA : Opening file.... %s\n",filename);
+        read_from_file(filename);
+    }
+    return 0;
+}
+
+void delete_data(char *filename, map<char*,variant<int,char*> >cond)
+{
+    int record_no = select_data(filename, cond);
+    delete_data_from_rec(filename,record_no);
+}
+
+
 void show_data(const char *filename)
 {
-    printf("\nSHOW_DATA : Opening file.... %s\n",filename);
-    read_from_file(filename);
+    if(!IS_READ){
+        printf("\nSHOW_DATA : Opening file.... %s\n",filename);
+        read_from_file(filename);
+    }
     if(NO_RECORDS == 0) {
         printf("No Data In this Table\n");
         return ;
@@ -168,5 +189,3 @@ void show_data(const char *filename)
     free(dest);
     fclose(fp);
 }
-
-

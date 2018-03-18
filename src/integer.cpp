@@ -10,10 +10,14 @@
  **/
 
 #include "integer.h"
-#include "aux_func.h"
 #include <cstdlib>
 #include <cstdio>
 using namespace std;
+
+char dig_to_byte(char dig)
+{
+    return dig - '0';
+}
 
 __c_int :: __c_int()
 {

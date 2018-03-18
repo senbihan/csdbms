@@ -103,7 +103,7 @@ char get_type(int type, int cons)
 /**
  * first creation of database
  **/
-void create_db()
+char *create_db()
 {
     TABLE_NAME = Malloc(char, TABLE_NAME_SIZE);
     //printf("Enter database name: \n");
@@ -156,6 +156,7 @@ void create_db()
     
     write_to_file();
     fclose(fptr);
-    printf("File written Successfully....\n");
+    printf("Database Created Successfully....\n");
+    return TABLE_NAME;
 }
 
