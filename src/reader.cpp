@@ -1,3 +1,8 @@
+/**
+ * Author : Bihan Sen (senbihan@gmail.com)
+ *
+ **/
+
 #include "metadata.h"
 #include "reader.h"
 #include <cstdio>

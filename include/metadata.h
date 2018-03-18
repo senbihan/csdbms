@@ -1,3 +1,8 @@
+/**
+ * Author : Bihan Sen (senbihan@gmail.com)
+ *
+ **/
+
 #ifndef METADATA_H
 #define METADATA_H
 

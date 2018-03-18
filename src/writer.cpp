@@ -1,3 +1,9 @@
+/**
+ * Author : Bihan Sen (senbihan@gmail.com)
+ *
+ **/
+
+
 #include "writer.h"
 #include <cstdio>
 #include <fstream>

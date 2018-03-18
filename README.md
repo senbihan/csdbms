@@ -8,10 +8,11 @@ This is a collaborative class project of Indian Statistical Institute, Kolkata f
 # Change Log:
 
 **Latest addition**:
-1. read/write the metadata
+1. Read/Write the metadata
 2. Insert Data
 3. Show Data
+4. Delete Data
+5. Records Ordering
 
 **Next to be added:**
-1. Primary Key Constraint.
-2. Records ordering
+1. Primary Key Constraint and Index File

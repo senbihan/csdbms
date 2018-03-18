@@ -1,3 +1,8 @@
+/**
+ * Author : Bihan Sen (senbihan@gmail.com)
+ *
+ **/
+
 #ifndef READER_H
 #define READER_H
 

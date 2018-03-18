@@ -1,3 +1,8 @@
+/**
+ * Author : Bihan Sen (senbihan@gmail.com)
+ *
+ **/
+
 #ifndef WRITER_H
 #define WRITER_H
 

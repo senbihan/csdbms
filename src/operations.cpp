@@ -1,3 +1,8 @@
+/**
+ * Author : Bihan Sen (senbihan@gmail.com)
+ *
+ **/
+
 #include <bits/stdc++.h>
 #include "reader.h"
 #include "operations.h"
