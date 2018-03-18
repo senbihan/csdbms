@@ -20,7 +20,7 @@ void print_menu()
     printf("| 1. CREATE Database %15c\n",'|');
     printf("| 2. INSERT into Database %10c\n",'|');
     printf("| 3. DELETE from Database %10c\n",'|');
-    printf("| 4. SHOW ALL DATA %17c\n",'|');
+    printf("| 4. SHOW DATA %21c\n",'|');
     printf("| 5. HELP %26c\n",'|');
     printf("| 6. QUIT %26c\n",'|');
     printf("------------------------------------\n");
@@ -30,51 +30,73 @@ void print_menu()
 void start_session()
 {
     print_menu();
-    int choice, rec;
+    map<char*,variant<int,char*>, cmp_str >cond;
+    int choice, i, c, int_data;
+    char *name = Malloc(char,255);
+    char *dest = Malloc(char,255);
     char *file = Malloc(char,255);
     bool show = true;
     while(show)
     {
-        printf("Enter Operation: ");
+        printf("\nEnter Operation: ");
         scanf("%d",&choice);
         switch(choice)
         {
             case 0 :
-                printf("LOAD: Enter database name : ");
+                printf("\nLOAD: Enter database name : ");
                 scanf("%s",file);
                 read_from_file(file);
                 printf("Database Loaded successfully\n");
                 break;
             case 1 : 
-                printf("CREATE: ");
+                printf("\nCREATE: ");
                 printf("format : {'DB_NAME', 'Number of Columns', \n{'Column Name', 'data type', 'primary key', 'max length'} }\n");
                 file = create_db();
+                read_from_file(file);
+                printf("Database Loaded successfully\n");
                 break;
             case 2:
                 //printf("Database Name : ");
                 //scanf("%s",file);
                 if(!IS_READ) ERR_MESG("Database is not loaded\n");
-                printf("INSERTION: Number of insertions: ");
-                int c;
+                printf("\nINSERTION: Number of insertions: ");
+                i = 0;
                 scanf("%d",&c);
-                while(c--)
-                    insert_data(file,1);
+                while(i++ < c)  insert_data(file,1);
+                printf("%d row inserted\n",c);
                 break;
             case 3:
                 //printf("Database Name : ");
                 //scanf("%s",file);
                 if(!IS_READ) ERR_MESG("Database is not loaded\n");
-                printf("DELETE : Record Number :");
-                scanf("%d",&rec);
-                delete_data_from_rec(file,rec);
+                
+                //delete_data_from_rec(file,rec);
                 //printf("1 row deleted\n");
                 break;
             case 4:
                 //printf("Database Name : ");
                 //scanf("%s",file);
                 if(!IS_READ) ERR_MESG("Database is not loaded\n");
-                printf("SHOWING ALL DATA: \n");
-                show_data(file);
+                printf("\nSHOWING DATA: \n");
+                printf("Number of conditions: ");
+                scanf("%d",&c);
+                while(c--){
+                    printf("Enter {COLUMN NAME, VALUE}\n");
+                    scanf("%s",name);
+                    assert(!COL_NT.empty());
+                    if(COL_NT.find(name) == COL_NT.end())
+                        ERR_MESG("no column of this name");
+                    if(COL_NT[name] == INTEGER){
+                        scanf("%d",&int_data);
+                        cond.insert(make_pair(name,int_data));
+                    }
+                    else if(COL_NT[name] == STRING){
+                        scanf("%s",dest);
+                        cond.insert(make_pair(name,dest));
+                    }
+                }
+                show_data(file,cond);
+                cond.clear();
                 break;
             case 5:
                 print_menu();

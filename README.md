@@ -16,3 +16,12 @@ This is a collaborative class project of Indian Statistical Institute, Kolkata f
 
 **Next to be added:**
 1. Primary Key Constraint and Index File
+
+
+**Dependency:**
+1. This project requires `gcc-7`. You can download from [here (Debian/Ubuntu)](https://packages.debian.org/buster/gcc-7-base)
+
+**Build and Run:**
+Command to build and run the project:
+`$ make`
+`$ ./bin/test`

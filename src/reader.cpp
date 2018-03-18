@@ -121,6 +121,8 @@ void read_from_file(const char *filename)
 
     for(int i = 0 ; i < NO_COLUMNS ; i++){
         DATA_TYPES[i] = get_type_int(col[i].data_type);
+        //printf("%s \t %d\n",col[i].col_name,DATA_TYPES[i]);
+        COL_NT[col[i].col_name] = DATA_TYPES[i];
         if(get_const_int(col[i].data_type))
             PRIMARY_KEY_COL_NO = i;
         //col[i].print_col();

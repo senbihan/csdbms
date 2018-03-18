@@ -69,7 +69,7 @@ void write_size_of_records()
 
 void write_last_rec_no()
 {
-    fwrite(&LAST_REC_NO,sizeof(int),1,fptr);
+    fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fptr);
 }
 
 /**
@@ -149,6 +149,7 @@ char *create_db()
         scanf("%d",&col[i].size);
         if(type == 1)   assert(col[i].size <= 9); // +1e9
 
+        COL_NT[col[i].col_name] = type;
         RECORD_SIZE += TYPE_SIZE[data_types[i]];
         CUM_POS[i] = i == 0 ? 0 : CUM_POS[i-1] + TYPE_SIZE[data_types[i]];
     }

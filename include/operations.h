@@ -26,7 +26,7 @@ void show_schema(const char *);
 void build_hash_table(const char *);
 void insert_data(const char *, int);
 void delete_data_from_rec(const char *, int );
-void delete_data(const char *, std::map<char*,std::variant<int,char*> >cond);
-void show_data(const char *);
+void delete_data(const char *, std::map<char*,std::variant<int,char*>, cmp_str >);
+void show_data(const char *, std::map<char*,std::variant<int,char*>, cmp_str >);
 
 #endif // INSERT_H

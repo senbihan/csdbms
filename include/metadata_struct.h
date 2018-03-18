@@ -15,6 +15,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 
 /*Helper Macros*/
 
@@ -54,7 +55,7 @@
 #define RECORD_SIZE_SIZE        2
 #define DATA_HEAD_SIZE          4
 #define DATA_END_SIZE           4
-
+#define LAST_REC_NO_SIZE        4 
 /* Variable Portion */
 
 #define COLUMN_DETAILS_SIZE     32
@@ -89,16 +90,17 @@
 
 // derived
 #define NO_REC_POSITION     FILE_HEADER_SIZE
-#define NO_COL_POSITIOn     NO_REC_POSITION + RECORD_NO_SIZE
-#define TBL_NAME_POSITIOn   NO_COL_POSITIOn + COLUMN_NO_SIZE
-#define REC_SIZE_POSITIOn   TBL_NAME_POSITIOn + TABLE_NAME_SIZE
-#define DATA_HEAD_POSITION  REC_SIZE_POSITIOn + RECORD_SIZE_SIZE
+#define NO_COL_POSITION     NO_REC_POSITION + RECORD_NO_SIZE
+#define TBL_NAME_POSITION   NO_COL_POSITION + COLUMN_NO_SIZE
+#define REC_SIZE_POSITION   TBL_NAME_POSITION + TABLE_NAME_SIZE
+#define DATA_HEAD_POSITION  REC_SIZE_POSITION + RECORD_SIZE_SIZE
 #define DATA_END_POSITION   DATA_HEAD_POSITION + DATA_HEAD_SIZE
-#define LAST_REC_NO_POS     DATA_END_POSITION + sizeof(int)
+#define LAST_REC_NO_POS     DATA_END_POSITION + DATA_END_SIZE
+#define COL_DESC_POR        LAST_REC_NO_POS + LAST_REC_NO_SIZE 
 
 #define D_END               DATA_HEAD + (NO_RECORDS * BLOCK_SIZE)
 #define BLOCK_START(i)      DATA_HEAD + (i - 1) * BLOCK_SIZE
-
+#define BLOCK_NO
 struct Column
 {
     char    col_name[COLUMN_NAME_SIZE];
@@ -116,5 +118,12 @@ struct Column
     }*/
 };
 
+struct cmp_str
+{
+   bool operator()(char const *a, char const *b)
+   {
+      return std::strcmp(a, b) < 0;
+   }
+};
 
 #endif // STRUCT_INFO_H

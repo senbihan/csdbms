@@ -8,6 +8,8 @@
 
 #include "metadata_struct.h"
 #include <unordered_map>
+#include <map>
+#include <cstring>  
 #include <utility>
 #include <variant>
 #include <cstdio>
@@ -28,7 +30,10 @@ int             PRIMARY_KEY_COL_NO;
 int             *CUM_POS;
 int             LAST_REC_NO;
 int             IS_READ;
+
 std::unordered_map<std::variant<int,char*>,int> hash_table;
+std::map<char*,int, cmp_str> COL_NT;
+
 
 
 #endif // METADATA_H
