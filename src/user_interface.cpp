@@ -30,10 +30,10 @@ void print_menu()
 void start_session()
 {
     print_menu();
-    map<const char*,variant<int,char*>, cmp_str >cond;
+    map<string,variant<int,string> >cond;
     int choice, i, c, int_data;
     //char *name = Malloc(char,255);
-    char *dest = Malloc(char,255);
+    string dest;
     char *file = Malloc(char,255);
     bool show = true;
     while(show)
@@ -69,9 +69,27 @@ void start_session()
                 //printf("Database Name : ");
                 //scanf("%s",file);
                 if(!IS_READ) ERR_MESG("Database is not loaded\n");
-                
-                //delete_data_from_rec(file,rec);
-                //printf("1 row deleted\n");
+                printf("Number of conditions: ");
+                scanf("%d",&c);
+                while(c--)
+                {
+                    printf("Enter {COLUMN NAME, VALUE}\n");
+                    string s;
+                    cin >> s;
+                    assert(!COL_NT.empty());
+                    if(COL_NT.find(s) == COL_NT.end())
+                        ERR_MESG("NO column of this name\n");
+                    if(COL_NT[s] == INTEGER){
+                        scanf("%d",&int_data);
+                        cond.insert(make_pair(s,int_data));
+                    }
+                    else if(COL_NT[s] == STRING){
+                        cin >> dest;
+                        cond.insert(make_pair(s,dest));
+                    }   
+                }
+                delete_data(file,cond);
+                cond.clear();
                 break;
             case 4:
                 //printf("Database Name : ");
@@ -86,15 +104,15 @@ void start_session()
                     string s;
                     cin >> s;
                     assert(!COL_NT.empty());
-                    if(COL_NT.find(s.c_str()) == COL_NT.end())
+                    if(COL_NT.find(s) == COL_NT.end())
                         ERR_MESG("NO column of this name\n");
-                    if(COL_NT[s.c_str()] == INTEGER){
+                    if(COL_NT[s] == INTEGER){
                         scanf("%d",&int_data);
-                        cond.insert(make_pair(s.c_str(),int_data));
+                        cond.insert(make_pair(s,int_data));
                     }
-                    else if(COL_NT[s.c_str()] == STRING){
-                        scanf("%s",dest);
-                        cond.insert(make_pair(s.c_str(),dest));
+                    else if(COL_NT[s] == STRING){
+                        cin >> dest;
+                        cond.insert(make_pair(s,dest));
                     }   
                 }
                 show_data(file,cond);

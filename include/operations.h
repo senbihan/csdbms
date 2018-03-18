@@ -4,6 +4,7 @@
 #include "metadata_struct.h"
 #include <variant>
 #include <map>
+#include <string.h>
 #include <unordered_map>
 
 extern int             NO_RECORDS;
@@ -18,16 +19,17 @@ extern std::string      types[6] ;//= {"INTEGER", "DOUBLE", "STRING", "DATE", "T
 extern int              TYPE_SIZE[6];
 extern int             PRIMARY_KEY_COL_NO;
 extern int             *CUM_POS;
+extern int             FIRST_REC_NO;
 extern int             LAST_REC_NO;
 extern int              IS_READ;
-extern std::map<const char*,int,cmp_str>   COL_NT;
+extern std::map<std::string,int>   COL_NT;
 extern std::unordered_map<std::variant<int,char*>,int> hash_table;
 
 void show_schema(const char *);
 void build_hash_table(const char *);
 void insert_data(const char *, int);
 void delete_data_from_rec(const char *, int );
-void delete_data(const char *, std::map<const char*,std::variant<int,char*>, cmp_str >);
-void show_data(const char *, std::map<const char*,std::variant<int,char*>, cmp_str >);
+void delete_data(const char *, std::map<std::string,std::variant<int,std::string> >);
+void show_data(const char *, std::map<std::string,std::variant<int,std::string> >);
 
 #endif // INSERT_H

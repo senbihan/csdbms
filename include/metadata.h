@@ -28,11 +28,12 @@ std::string     types[6] = {"", "INTEGER", "DOUBLE", "STRING", "DATE", "TIME"};
 int             TYPE_SIZE[6]   = {0, sizeof(int), sizeof(double), STR_MAX_SIZE, 0 , 0};
 int             PRIMARY_KEY_COL_NO;
 int             *CUM_POS;
+int             FIRST_REC_NO;
 int             LAST_REC_NO;
 int             IS_READ;
 
 std::unordered_map<std::variant<int,char*>,int> hash_table;
-std::map<const char*,int, cmp_str> COL_NT;
+std::map<std::string,int> COL_NT;
 
 
 

@@ -67,6 +67,12 @@ void write_size_of_records()
     fwrite(&RECORD_SIZE,RECORD_SIZE_SIZE,1,fptr);
 }
 
+void write_first_rec_no()
+{
+    fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fptr);
+}
+
+
 void write_last_rec_no()
 {
     fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fptr);
@@ -90,6 +96,7 @@ void write_to_file()
     write_size_of_records();
     write_data_head();
     write_data_end();
+    write_first_rec_no();
     write_last_rec_no();
     write_columns();
 }
@@ -126,6 +133,7 @@ char *create_db()
     int type, cons;
     PRIMARY_KEY_COL_NO = -1;
     LAST_REC_NO = 0;
+    FIRST_REC_NO = 1;
     for(int i = 0 ; i < NO_COLUMNS; i++)
     {
         //printf("Enter Column Name: ");
@@ -149,7 +157,8 @@ char *create_db()
         scanf("%d",&col[i].size);
         if(type == 1)   assert(col[i].size <= 9); // +1e9
 
-        COL_NT[col[i].col_name] = type;
+        //string s(col[i].col_name);
+        //COL_NT[s] = type;
         RECORD_SIZE += TYPE_SIZE[data_types[i]];
         CUM_POS[i] = i == 0 ? 0 : CUM_POS[i-1] + TYPE_SIZE[data_types[i]];
     }

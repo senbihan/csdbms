@@ -79,9 +79,14 @@ void read_columns()
     fread(col, sizeof(struct Column), NO_COLUMNS , frptr); 
 }
 
+void read_first_rec_no()
+{
+    fread(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,frptr);
+}
+
 void read_last_rec_no()
 {
-    fread(&LAST_REC_NO,sizeof(int),1,frptr);
+    fread(&LAST_REC_NO,FIRST_REC_NO_SIZE,1,frptr);
 }
 
 
@@ -107,6 +112,8 @@ void read_from_file(const char *filename)
     //printf("Data Head : %d\n",DATA_HEAD);
     read_data_end();
     //printf("Data End : %d\n",DATA_END);
+    read_first_rec_no();
+    printf("first record no: %d\n",FIRST_REC_NO);
     read_last_rec_no();
     //printf("Last record no: %d\n",LAST_REC_NO);
 
@@ -122,7 +129,8 @@ void read_from_file(const char *filename)
     for(int i = 0 ; i < NO_COLUMNS ; i++){
         DATA_TYPES[i] = get_type_int(col[i].data_type);
         //printf("%s \t %d\n",col[i].col_name,DATA_TYPES[i]);
-        COL_NT[col[i].col_name] = DATA_TYPES[i];
+        string s(col[i].col_name);
+        COL_NT[s] = DATA_TYPES[i];
         if(get_const_int(col[i].data_type))
             PRIMARY_KEY_COL_NO = i;
         //col[i].print_col();

@@ -67,7 +67,7 @@ void insert_data(const char *filename, int num_ins = 1)
                 fwrite(dest,sizeof(char),255,fp);
             }
         }
-        if(counter == 1)
+        if(counter == 1 && LAST_REC_NO > 0)
         {
             //go to the last record and write its next
             long int temp_pos = ftell(fp);
@@ -78,10 +78,10 @@ void insert_data(const char *filename, int num_ins = 1)
             fseek(fp,temp_pos,SEEK_SET);
         }
         // write previous pointer
-        int temp = counter == 1 ? LAST_REC_NO : NO_RECORDS + counter - 1;
+        int temp = LAST_REC_NO + counter - 1;
         fwrite(&temp,PTR_SIZE,1,fp);
         // write the next pointer
-        temp = counter == num_ins ? 0 : NO_RECORDS + counter + 1;
+        temp = counter == num_ins ? 0 : LAST_REC_NO + counter + 1;
         fwrite(&temp,PTR_SIZE,1,fp);
         // write extra blank space
         fwrite(blank,BLOCK_SIZE-TOTAL_RECORD_SIZE,1,fp);
@@ -111,7 +111,7 @@ void insert_data(const char *filename, int num_ins = 1)
  *          conditions (Hashmap) : if empty equivalent to SELECT *
  * 
  */
-vector<int> select_data(const char* filename, FILE *fp, map<const char*,variant<int,char*>, cmp_str >cond)
+vector<int> select_data(const char* filename, FILE *fp, map<string,variant<int,string> >cond)
 {
     if(!IS_READ){
         printf("\nSELECT_DATA : Opening file.... %s\n",filename);
@@ -122,11 +122,12 @@ vector<int> select_data(const char* filename, FILE *fp, map<const char*,variant<
     assert(fp != NULL);
     vector<int>record_numbers;
 
-    fseek(fp,DATA_HEAD,SEEK_SET);
     int int_data;
     char *dest = Malloc(char,255);
     int prev, next;
-    int blockNo = 1;
+    int blockNo = FIRST_REC_NO;
+    fseek(fp,BLOCK_START(blockNo),SEEK_SET);
+    
     // revise
     do{
         int flag = 1;
@@ -134,17 +135,19 @@ vector<int> select_data(const char* filename, FILE *fp, map<const char*,variant<
         {
             if(DATA_TYPES[j] == 1){          
                 fread(&int_data,sizeof(int),1,fp);
-                if(cond.find(col[j].col_name) != cond.end()){
-                    int ival = get<int>(cond[col[j].col_name]);
+                string s(col[j].col_name);
+                if(cond.find(s) != cond.end()){
+                    int ival = get<int>(cond[s]);
                     if( ival == int_data)  flag &= 1;
                     else    flag &= 0;
                 }
             }
             else if(DATA_TYPES[j] == 3){
                 fread(dest,sizeof(char),255,fp);
-                if(cond.find(col[j].col_name) != cond.end()){
-                    char *temp = get<char*>(cond[col[j].col_name]);
-                    if(strcmp(temp,dest) == 0)    flag &= 1;
+                string s(col[j].col_name);
+                if(cond.find(s) != cond.end()){
+                    string temp = get<string>(cond[s]);
+                    if(strcmp(temp.c_str(),dest) == 0)    flag &= 1;
                     else    flag &= 0;
                 }
             }
@@ -194,17 +197,23 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
     fseek(fp,BLOCK_START(next) + RECORD_SIZE , SEEK_SET);
     fwrite(&prev,PTR_SIZE,1,fp);
 
+    if(recNo == FIRST_REC_NO){
+        FIRST_REC_NO = next;
+        fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
+        fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
+    }
     if(recNo == LAST_REC_NO)    LAST_REC_NO--;
     NO_RECORDS--;
 }
 
-void delete_data(char *filename, map<const char*,variant<int,char*>, cmp_str >cond)
+void delete_data(const char *filename, map<string,variant<int,string> >cond)
 {
     FILE *fp = fopen(filename, "r+");
     vector<int>record_no = select_data(filename, fp, cond);
     for(int r_no : record_no)
         delete_data_from_rec(filename,fp, r_no);
-    fclose(fp);    
+    fclose(fp);
+    printf("%d records deleted\n",(int)record_no.size());    
 }
 
 /******************************* DISPLAY ********************************/
@@ -215,7 +224,7 @@ void delete_data(char *filename, map<const char*,variant<int,char*>, cmp_str >co
  *          conditions (Hashmap) : if empty equivalent to SELECT *
  * 
  */
-void show_data(const char *filename, map<const char*,variant<int,char*>, cmp_str >cond)
+void show_data(const char *filename, map<string,variant<int,string> >cond)
 {
     if(!IS_READ){
         printf("\nSHOW_DATA : Opening file.... %s\n",filename);
@@ -235,7 +244,7 @@ void show_data(const char *filename, map<const char*,variant<int,char*>, cmp_str
             printf("%-12s",col[i].col_name);
         printf("\n");
         printf("----------------------------------------------------------\n");
-        fseek(fp,DATA_HEAD,SEEK_SET);
+        fseek(fp,BLOCK_START(FIRST_REC_NO),SEEK_SET);
         int prev, next;
         do{
             for(int j = 0 ; j < NO_COLUMNS; j++){
