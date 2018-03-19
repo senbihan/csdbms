@@ -27,14 +27,14 @@ void show_schema(const char *filename)
     printf("----------------------------------------\n");
 }
 
-void build_hash_table(const char *filename)
+/*void build_hash_table(const char *filename)
 {
     FILE *fp = fopen(filename, "rb+");
     fseek(fp,DATA_HEAD,SEEK_SET);
     for(int i = 0 ; i < NO_RECORDS ; i++){
 
     }   
-}
+}*/
 
 void insert_data(const char *filename, int num_ins = 1)
 {
@@ -202,8 +202,23 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
         fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
         fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
     }
-    if(recNo == LAST_REC_NO)    LAST_REC_NO--;
+    if(recNo == LAST_REC_NO){
+        // revise
+        LAST_REC_NO--;
+    }
     NO_RECORDS--;
+    if(NO_RECORDS == 0){
+        // reset
+        LAST_REC_NO = 0;
+        FIRST_REC_NO = 1;
+        DATA_END = DATA_HEAD;
+        fseek(fp,DATA_END_POSITION,SEEK_SET);
+        fwrite(&DATA_END, DATA_END_SIZE, 1, fp);
+        fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
+        fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
+        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+    }
 }
 
 void delete_data(const char *filename, map<string,variant<int,string> >cond)
