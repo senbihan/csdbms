@@ -54,6 +54,7 @@ void start_session()
                 file = create_db();
                 read_from_file(file);
                 printf("Database Loaded successfully\n");
+                show_schema(file);
                 break;
             case 2:
                 //printf("Database Name : ");
