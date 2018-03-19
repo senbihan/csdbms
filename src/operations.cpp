@@ -29,7 +29,7 @@ void show_schema(const char *filename)
 
 void build_hash_table(const char *filename)
 {
-    FILE *fp = fopen(filename, "r+");
+    FILE *fp = fopen(filename, "rb+");
     fseek(fp,DATA_HEAD,SEEK_SET);
     for(int i = 0 ; i < NO_RECORDS ; i++){
 
@@ -42,7 +42,7 @@ void insert_data(const char *filename, int num_ins = 1)
         printf("\nINSERTION : Opening file.... %s\n",filename);
         read_from_file(filename);
     }
-    FILE *fp = fopen(filename, "r+");
+    FILE *fp = fopen(filename, "rb+");
     assert(fp != NULL);
     int int_data;
     char *dest = Malloc(char,255);
@@ -116,7 +116,7 @@ vector<int> select_data(const char* filename, FILE *fp, map<string,variant<int,s
     if(!IS_READ){
         printf("\nSELECT_DATA : Opening file.... %s\n",filename);
         read_from_file(filename);
-        fp = fopen(filename, "r");
+        fp = fopen(filename, "rb+");
     }
     //FILE *fp = fopen(filename, "r");
     assert(fp != NULL);
@@ -178,7 +178,7 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
     if(!IS_READ){
         printf("\nDELETE_DATA : Opening file.... %s\n",filename);
         read_from_file(filename);
-        fp = fopen(filename, "r+");
+        fp = fopen(filename, "rb+");
     }
     if(NO_RECORDS == 0) {
         printf("No Data In this Table\n");
@@ -208,7 +208,7 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
 
 void delete_data(const char *filename, map<string,variant<int,string> >cond)
 {
-    FILE *fp = fopen(filename, "r+");
+    FILE *fp = fopen(filename, "rb+");
     vector<int>record_no = select_data(filename, fp, cond);
     for(int r_no : record_no)
         delete_data_from_rec(filename,fp, r_no);
@@ -234,7 +234,7 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
         printf("No Data In this Table\n");
         return ;
     }
-    FILE *fp = fopen(filename, "r");
+    FILE *fp = fopen(filename, "rb");
     assert(fp != NULL);
     int int_data;
     char *dest = Malloc(char,255);
