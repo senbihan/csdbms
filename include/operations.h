@@ -22,6 +22,7 @@ extern int             *CUM_POS;
 extern int             FIRST_REC_NO;
 extern int             LAST_REC_NO;
 extern int              IS_READ;
+extern int              TOTAL_RECORD;
 extern std::map<std::string,int>   COL_NT;
 extern std::unordered_map<std::variant<int,char*>,int> hash_table;
 

@@ -24,6 +24,7 @@ extern int             PRIMARY_KEY_COL_NO;
 extern int             *CUM_POS;
 extern int              FIRST_REC_NO;
 extern int             LAST_REC_NO;
+extern int              TOTAL_RECORD;
 extern std::map<std::string,int> COL_NT;
 
 void write_to_file();

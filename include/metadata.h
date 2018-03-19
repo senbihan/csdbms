@@ -30,6 +30,7 @@ int             PRIMARY_KEY_COL_NO;
 int             *CUM_POS;
 int             FIRST_REC_NO;
 int             LAST_REC_NO;
+int             TOTAL_RECORD;
 int             IS_READ;
 
 std::unordered_map<std::variant<int,char*>,int> hash_table;

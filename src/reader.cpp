@@ -89,6 +89,11 @@ void read_last_rec_no()
     fread(&LAST_REC_NO,FIRST_REC_NO_SIZE,1,frptr);
 }
 
+void read_total_rec()
+{
+    fread(&TOTAL_RECORD,TOTAL_REC_SIZE,1,frptr);
+}
+
 
 void read_from_file(const char *filename)
 {
@@ -113,9 +118,12 @@ void read_from_file(const char *filename)
     read_data_end();
     //printf("Data End : %d\n",DATA_END);
     read_first_rec_no();
-    printf("first record no: %d\n",FIRST_REC_NO);
+    //printf("first record no: %d\n",FIRST_REC_NO);
     read_last_rec_no();
     //printf("Last record no: %d\n",LAST_REC_NO);
+    read_total_rec();
+    
+
 
     col = Malloc(struct Column, NO_COLUMNS);
     assert(col != NULL);

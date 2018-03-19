@@ -48,56 +48,114 @@ void insert_data(const char *filename, int num_ins = 1)
     char *dest = Malloc(char,255);
     char *blank = (char*)calloc(BLOCK_SIZE - TOTAL_RECORD_SIZE, sizeof(char));
     assert(dest != NULL && blank != NULL);
+    int last_next;
     // build index if not already built
 
-    // Goto Last 
-    fseek(fp,DATA_END,SEEK_SET);
-    int counter;
-    int succ_ins = 0;
-    for(counter = 1 ; counter <= num_ins; counter++){
-        for(int i = 0 ; i < NO_COLUMNS ; i++){
-            if(DATA_TYPES[i] == 1){          
-                scanf("%d",&int_data);
-                assert(int_data <= MAX_INTEGER);
-                fwrite(&int_data,int(sizeof(int)),1,fp);
-            }
-            else if(DATA_TYPES[i] == 3){
-                scanf("%s",dest);
-                assert(strlen(dest) <= 255);
-                fwrite(dest,sizeof(char),255,fp);
-            }
-        }
-        if(counter == 1 && LAST_REC_NO > 0)
-        {
-            //go to the last record and write its next
-            long int temp_pos = ftell(fp);
-            fseek(fp,BLOCK_START(LAST_REC_NO) + RECORD_SIZE + PTR_SIZE, SEEK_SET);
-            int t = NO_RECORDS + 1;
-            fwrite(&t,PTR_SIZE,1,fp);
-            // back to the position
-            fseek(fp,temp_pos,SEEK_SET);
-        }
-        // write previous pointer
-        int temp = LAST_REC_NO + counter - 1;
-        fwrite(&temp,PTR_SIZE,1,fp);
-        // write the next pointer
-        temp = counter == num_ins ? 0 : LAST_REC_NO + counter + 1;
-        fwrite(&temp,PTR_SIZE,1,fp);
-        // write extra blank space
-        fwrite(blank,BLOCK_SIZE-TOTAL_RECORD_SIZE,1,fp);
-        succ_ins++;
-        assert(NO_RECORDS < MAX_RECORDS);
+    int prev = -1, next = -1;
+    int iden = 0;
+    if(LAST_REC_NO == 0 && TOTAL_RECORD == 0)
+    {
+        // No records in the database and no slot is also there 
+        // after update prev = 0, next = 0
+        prev = next = 0;
+        LAST_REC_NO++;
+        TOTAL_RECORD++;
+        fseek(fp,TOTAL_REC_POS,SEEK_SET);
+        fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
+        // update last
+        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+
+        // update will be at this position
+        fseek(fp,DATA_HEAD,SEEK_SET);
     }
-    NO_RECORDS += succ_ins;
-    LAST_REC_NO += succ_ins;
-    fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-    fwrite(&LAST_REC_NO,sizeof(int),1,fp);
+    else if(LAST_REC_NO == 0 && TOTAL_RECORD > 0)
+    {
+        // a linked list is already built, so follow that. go to last
+        LAST_REC_NO++;
+        // update last
+        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+
+        fseek(fp,BLOCK_START(LAST_REC_NO),SEEK_SET);
+        // no need to update prev and next
+    }
+    else
+    {
+        // go to the last and read its next
+        fseek(fp,BLOCK_START(LAST_REC_NO) + RECORD_SIZE + PTR_SIZE ,SEEK_SET);
+        fread(&last_next,PTR_SIZE,1,fp);
+        //printf("last next = %d\n",last_next);
+        if( last_next != 0 )
+        {
+            // already a blank node is there.
+            // go to next and write there
+            LAST_REC_NO = last_next;
+            // update last
+            fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+            fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+
+            fseek(fp,BLOCK_START(last_next),SEEK_SET);
+            // no need to update prev and next
+        }
+        else
+        {
+            TOTAL_RECORD = TOTAL_RECORD + 1;
+            // write at last->next = this
+            //printf("Updating next of %d is..... %d\n",LAST_REC_NO,TOTAL_RECORD);
+            fseek(fp,BLOCK_START(LAST_REC_NO) + RECORD_SIZE + PTR_SIZE ,SEEK_SET);
+            last_next = TOTAL_RECORD;
+            fwrite(&last_next,PTR_SIZE,1,fp);
+            //printf("writing last next : %d\n",last_next);
+
+            fseek(fp,BLOCK_START(TOTAL_RECORD),SEEK_SET);
+            // prev = last next = 0
+            // last->next = TOTAL_RECORD
+            // last = this
+            prev = LAST_REC_NO;
+            next = 0;
+            iden = 1;
+        }
+    }
+    
+    // write the data
+    for(int i = 0 ; i < NO_COLUMNS ; i++){
+        if(DATA_TYPES[i] == 1){          
+            scanf("%d",&int_data);
+            assert(int_data <= MAX_INTEGER);
+            fwrite(&int_data,int(sizeof(int)),1,fp);
+        }
+        else if(DATA_TYPES[i] == 3){
+            scanf("%s",dest);
+            assert(strlen(dest) <= 255);
+            fwrite(dest,sizeof(char),255,fp);
+        }
+    }
+
+    if(prev != -1 && next != -1){
+        fwrite(&prev,PTR_SIZE,1,fp);
+        fwrite(&next,PTR_SIZE,1,fp);
+        // write blank
+        fwrite(blank,sizeof(char),BLOCK_SIZE - TOTAL_RECORD_SIZE,fp);    
+    }
+    if(iden)
+    {
+        // update TOTAL_RECORD
+        fseek(fp,TOTAL_REC_POS,SEEK_SET);
+        fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
+        // update last
+        LAST_REC_NO = TOTAL_RECORD;
+        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+    }
+
+    ++NO_RECORDS;
     fseek(fp,NO_REC_POSITION,SEEK_SET);
     fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
-    DATA_END = D_END;
-    fseek(fp,DATA_END_POSITION,SEEK_SET);
-    fwrite(&DATA_END,DATA_END_SIZE,1,fp);
-    //printf("%d row inserted.\n",succ_ins);
+
+    //printf("Last record no: %d\n",LAST_REC_NO);
+    //printf("Total Records: %d\n",TOTAL_RECORD);
+
     free(dest);
     free(blank);
     fclose(fp);
@@ -158,7 +216,7 @@ vector<int> select_data(const char* filename, FILE *fp, map<string,variant<int,s
         //printf("%-12d",prev);
         fread(&next,PTR_SIZE,1,fp);
         //printf("%-12d",next);
-        if(next == 0)   break;  // end of data
+        if(blockNo == LAST_REC_NO || next == 0)   break;  // end of data
         blockNo = next;
         fseek(fp,BLOCK_START(next),SEEK_SET);
     }while(true);
@@ -186,38 +244,87 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
     }
     int prev, next;
     assert(fp != NULL);
-    fseek(fp,BLOCK_START(recNo) + RECORD_SIZE , SEEK_SET);
-    fread(&prev,PTR_SIZE,1,fp);
-    fread(&next,PTR_SIZE,1,fp);
+    fseek(fp,BLOCK_START(recNo) + RECORD_SIZE , SEEK_SET); 
+    fread(&prev,PTR_SIZE,1,fp); // prev = cur->prev
+    fread(&next,PTR_SIZE,1,fp); // next = cur->next
 
-    // go to 'prev' block and change its next to 'next'
-    fseek(fp,BLOCK_START(prev) + RECORD_SIZE + PTR_SIZE , SEEK_SET);
-    fwrite(&next,PTR_SIZE,1,fp);
-    // go to 'next' blok and change its previous to 'prev'
-    fseek(fp,BLOCK_START(next) + RECORD_SIZE , SEEK_SET);
-    fwrite(&prev,PTR_SIZE,1,fp);
+    if(recNo == LAST_REC_NO)
+    {
+        int temp;
+        // read its previous
+        fseek(fp,BLOCK_START(LAST_REC_NO) + RECORD_SIZE , SEEK_SET);
+        fread(&temp,PTR_SIZE,1,fp);
+        // update last record no
+        LAST_REC_NO = temp;
+        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+        --NO_RECORDS;
+        fseek(fp,NO_REC_POSITION,SEEK_SET);
+        fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
+        if(NO_RECORDS == 0)
+        {
+            // reset all
+            LAST_REC_NO = 0;
+            FIRST_REC_NO = 1;
+            TOTAL_RECORD = 0;
+            fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
+            fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
+            fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+            fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+            fseek(fp,TOTAL_REC_POS,SEEK_SET);
+            fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
+        }
+        return ;
+    }
 
-    if(recNo == FIRST_REC_NO){
+    if(recNo == FIRST_REC_NO)
+    {
         FIRST_REC_NO = next;
         fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
         fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
+        // update its previous = 0
+        int temp = 0;
+        fseek(fp,BLOCK_START(FIRST_REC_NO) + RECORD_SIZE , SEEK_SET);
+        fread(&temp,PTR_SIZE,1,fp);
     }
-    if(recNo == LAST_REC_NO){
-        // revise
-        LAST_REC_NO--;
+    else{
+        // go to next block and update its previous to prev
+        fseek(fp,BLOCK_START(next) + RECORD_SIZE , SEEK_SET);
+        fwrite(&prev,PTR_SIZE,1,fp);
+
+        // go to 'prev' block and change its next to 'next'
+        fseek(fp,BLOCK_START(prev) + RECORD_SIZE + PTR_SIZE , SEEK_SET);
+        fwrite(&next,PTR_SIZE,1,fp);
     }
-    NO_RECORDS--;
-    if(NO_RECORDS == 0){
-        // reset
+
+    // go to last and read its next
+    int temp;
+    fseek(fp,BLOCK_START(LAST_REC_NO) + RECORD_SIZE + PTR_SIZE ,SEEK_SET);
+    fread(&temp,PTR_SIZE,1,fp); // temp = last->next
+    fwrite(&recNo,PTR_SIZE,1,fp); // last->next = curr
+    prev = LAST_REC_NO; // curr->prev = last
+    fseek(fp,BLOCK_START(recNo) + RECORD_SIZE , SEEK_SET);
+    fwrite(&prev,PTR_SIZE,1,fp);
+    fwrite(&temp,PTR_SIZE,1,fp);  //curr->next = temp
+    if(temp != 0){
+        fseek(fp,BLOCK_START(temp) + RECORD_SIZE , SEEK_SET);
+        fwrite(&recNo,PTR_SIZE,1,fp);// temp->prev = curr
+    }
+    --NO_RECORDS;
+    fseek(fp,NO_REC_POSITION,SEEK_SET);
+    fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
+    if(NO_RECORDS == 0)
+    {
+        // reset all
         LAST_REC_NO = 0;
         FIRST_REC_NO = 1;
-        DATA_END = DATA_HEAD;
-        fseek(fp,DATA_END_POSITION,SEEK_SET);
-        fwrite(&DATA_END, DATA_END_SIZE, 1, fp);
+        TOTAL_RECORD = 0;
         fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
         fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
         fseek(fp,LAST_REC_NO_POS,SEEK_SET);
         fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+        fseek(fp,TOTAL_REC_POS,SEEK_SET);
+        fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
     }
 }
 
@@ -249,7 +356,7 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
         printf("No Data In this Table\n");
         return ;
     }
-    FILE *fp = fopen(filename, "rb");
+    FILE *fp = fopen(filename, "rb+");
     assert(fp != NULL);
     int int_data;
     char *dest = Malloc(char,255);
@@ -259,9 +366,13 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
             printf("%-12s",col[i].col_name);
         printf("\n");
         printf("----------------------------------------------------------\n");
-        fseek(fp,BLOCK_START(FIRST_REC_NO),SEEK_SET);
+        //printf("FIRST REC NO %d\n",FIRST_REC_NO);
+        //printf("Last rec no: %d\n",LAST_REC_NO);
+        int current = FIRST_REC_NO;
+        fseek(fp,BLOCK_START(current),SEEK_SET);
         int prev, next;
         do{
+            //printf("current : %d ",current);
             for(int j = 0 ; j < NO_COLUMNS; j++){
                 if(DATA_TYPES[j] == 1){          
                     fread(&int_data,sizeof(int),1,fp);
@@ -273,15 +384,17 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
                 }
             }
             fread(&prev,PTR_SIZE,1,fp);
-            //printf("%-12d",prev);
+            //printf("previous : %-12d",prev);
             fread(&next,PTR_SIZE,1,fp);
-            //printf("%-12d",next);
-            if(next == 0)   break;  // end of data
+            //printf("next : %-12d",next);
+            //system("read n");
+            if(current == LAST_REC_NO || next == 0)   break;  // end of data
             fseek(fp,BLOCK_START(next),SEEK_SET);
+            current = next;
             printf("\n");
         }while(true);
         printf("\n");
-        free(dest);
+        //free(dest);
     }
     else{
         vector<int>rec_no = select_data(filename,fp,cond);

@@ -78,6 +78,11 @@ void write_last_rec_no()
     fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fptr);
 }
 
+void write_total_rec()
+{
+    fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fptr);
+}
+
 /**
  * write all columns to the file
  */
@@ -98,6 +103,7 @@ void write_to_file()
     write_data_end();
     write_first_rec_no();
     write_last_rec_no();
+    write_total_rec();
     write_columns();
 }
 
@@ -134,6 +140,7 @@ char *create_db()
     PRIMARY_KEY_COL_NO = -1;
     LAST_REC_NO = 0;
     FIRST_REC_NO = 1;
+    TOTAL_RECORD = 0;
     for(int i = 0 ; i < NO_COLUMNS; i++)
     {
         //printf("Enter Column Name: ");
