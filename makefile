@@ -1,44 +1,23 @@
 IDIR =./include
 CC=gcc
-CXX=g++-7 -std=c++17 -g -Wall
-ODIR=./obj/
-SRC=./src/
+CXX=g++-7
+CFLAGS =-std=c++17 -g -Wall
+ODIR=./obj
+SRC=./src
 BIN=./bin/
 TST=./test/
-
+OBJ= $(addprefix $(ODIR)/, user_interface.o integer.o reader.o writer.o operations.o)
+INC = $(addprefix $(IDIR)/, integer.h metadata.h metadata_struct.h operations.h \
+		reader.h user_interface.h writer.h)
 # test
-test : test_main.cpp user_inteface.o integer.o reader.o writer.o operations.o 
-	$(CXX) -o $(BIN)$@ $(TST)test_main.cpp $(ODIR)user_interface.o $(ODIR)reader.o $(ODIR)writer.o $(ODIR)operations.o -I $(IDIR)
+all : test
 
-integer.o: integer.cpp
-	$(CXX) -c $(SRC)integer.cpp -I $(IDIR)
-	mv integer.o $(ODIR) 
+test : $(TST)test_main.cpp $(OBJ)
+	$(CXX) $(CFLAGS) -o $(BIN)test $< $(OBJ) -I $(IDIR)
 
-user_inteface.o: user_interface.cpp
-	$(CXX) -c $(SRC)user_interface.cpp -I $(IDIR)
-	mv user_interface.o $(ODIR)
+$(ODIR)/%.o : $(SRC)/%.cpp $(INC)
+	$(CXX) $(CFLAGS) -I $(IDIR) -c $< -o $@  
 
-operations.o: operations.cpp
-	$(CXX) -c $(SRC)operations.cpp -I $(IDIR)
-	mv operations.o $(ODIR)
+$(INC):
 
-reader.o: reader.cpp
-	$(CXX) -c $(SRC)reader.cpp -I $(IDIR)
-	mv reader.o $(ODIR)
-
-writer.o: writer.cpp
-	$(CXX) -c $(SRC)writer.cpp -I $(IDIR)
-	mv writer.o $(ODIR)
-
-
-test_main.cpp: 
-
-integer.cpp: 
-
-reader.cpp:
-
-writer.cpp:
-
-operations.cpp:
-
-user_interface.cpp:
+$(TST)test_main.cpp: 
