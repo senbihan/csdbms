@@ -29,9 +29,9 @@
 #define INT_BYTE_SIZE           5                
 #define MAX_INTEGER             (int(1e10)-1)
 #define MAX_RECORDS             2048
-#define MAX_COLUMNS             10
+#define MAX_COLUMNS             255
 #define STR_MAX_SIZE            255
-#define BLOCK_SIZE              (1 << 11)
+#define BLOCK_SIZE              (1 << 16)
 #define PTR_SIZE                4
 
 /* Dataypes maps */
@@ -104,22 +104,14 @@
 
 #define D_END               DATA_HEAD + (LAST_REC_NO * BLOCK_SIZE)
 #define BLOCK_START(i)      DATA_HEAD + (i - 1) * BLOCK_SIZE
-#define BLOCK_NO
+
 struct Column
 {
     char    col_name[COLUMN_NAME_SIZE];
-    char    index;
     char    data_type;
-    int     size; // 1 byte rep will be added later
-
-
-    /*void print_col(){
-        printf("\n");
-        printf("Col Name : %s\n",col_name);
-        printf("Col Index: %d\n",index);
-        printf("Data Type: %d\n",data_type);
-        printf("Size : %d\n",size);
-    }*/
+    char    index;
+    char    size; // 1 byte rep will be added later
+    char    frac_part_size;
 };
 
 

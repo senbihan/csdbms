@@ -51,7 +51,7 @@ void write_data_head()
 {
     //printf("writing at %d\n",ftell(fptr));
     DATA_HEAD = ftell(fptr) + DATA_HEAD_SIZE + DATA_END_SIZE ;
-    DATA_HEAD += sizeof(int);   // storing last recordNO
+    DATA_HEAD += FIRST_REC_NO_SIZE + LAST_REC_NO_SIZE + TOTAL_REC_SIZE;
     DATA_HEAD += NO_COLUMNS * sizeof(struct Column);
     fwrite(&DATA_HEAD, DATA_HEAD_SIZE, 1, fptr);
 }
@@ -150,7 +150,7 @@ char *create_db()
         //printf("\n1. Number \n2. Double \n3. String \n4. Date \n5. Time \n");
         scanf("%d",&type);
         data_types[i] = type;
-        //printf("Constraint : \n1. Primary Key \n2. Not Null \n3. Auto INCR \n");
+        //printf("Constraint : \n1. Primary Key \n2. Not Null \n3. Auto INCR \n0.Default");
         scanf("%d",&cons);
         if(cons == 1){
             if(PRIMARY_KEY_COL_NO == -1)
@@ -161,7 +161,9 @@ char *create_db()
         // make 1 Byte rep of type and constraint;
         char data_type = get_type(type, cons);
         col[i].data_type = data_type;
-        scanf("%d",&col[i].size);
+        int t;
+        scanf("%d",&t);
+        col[i].size = t - '0'; 
         if(type == 1)   assert(col[i].size <= 9); // +1e9
 
         //string s(col[i].col_name);

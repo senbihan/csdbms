@@ -12,7 +12,7 @@ FILE *frptr;
 
 void open_file(const char *filename)
 {
-    frptr = fopen(filename,"rb+");
+    frptr = fopen(filename,"rb");
     if(frptr == NULL)   ERR_MESG("reader : File cannot be opened or doesnot exist!");
 }
 
@@ -122,7 +122,6 @@ void read_from_file(const char *filename)
     read_last_rec_no();
     //printf("Last record no: %d\n",LAST_REC_NO);
     read_total_rec();
-    
 
 
     col = Malloc(struct Column, NO_COLUMNS);

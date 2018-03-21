@@ -27,14 +27,6 @@ void show_schema(const char *filename)
     printf("----------------------------------------\n");
 }
 
-/*void build_hash_table(const char *filename)
-{
-    FILE *fp = fopen(filename, "rb+");
-    fseek(fp,DATA_HEAD,SEEK_SET);
-    for(int i = 0 ; i < NO_RECORDS ; i++){
-
-    }   
-}*/
 
 void insert_data(const char *filename, int num_ins = 1)
 {
@@ -51,6 +43,8 @@ void insert_data(const char *filename, int num_ins = 1)
     int last_next;
     // build index if not already built
 
+
+    int record_no_ins;
     int prev = -1, next = -1;
     int iden = 0;
     if(LAST_REC_NO == 0 && TOTAL_RECORD == 0)
@@ -60,6 +54,7 @@ void insert_data(const char *filename, int num_ins = 1)
         prev = next = 0;
         LAST_REC_NO++;
         TOTAL_RECORD++;
+        record_no_ins = 1;
         fseek(fp,TOTAL_REC_POS,SEEK_SET);
         fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
         // update last
@@ -78,6 +73,7 @@ void insert_data(const char *filename, int num_ins = 1)
         fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
 
         fseek(fp,BLOCK_START(LAST_REC_NO),SEEK_SET);
+        record_no_ins = LAST_REC_NO;
         // no need to update prev and next
     }
     else
@@ -96,10 +92,12 @@ void insert_data(const char *filename, int num_ins = 1)
             fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
 
             fseek(fp,BLOCK_START(last_next),SEEK_SET);
+            record_no_ins = last_next;
             // no need to update prev and next
         }
         else
         {
+            // free list is empty
             TOTAL_RECORD = TOTAL_RECORD + 1;
             // write at last->next = this
             //printf("Updating next of %d is..... %d\n",LAST_REC_NO,TOTAL_RECORD);
@@ -115,9 +113,12 @@ void insert_data(const char *filename, int num_ins = 1)
             prev = LAST_REC_NO;
             next = 0;
             iden = 1;
+            record_no_ins = TOTAL_RECORD;
         }
     }
     
+    // key : primary key, val = record_no_ins
+
     // write the data
     for(int i = 0 ; i < NO_COLUMNS ; i++){
         if(DATA_TYPES[i] == 1){          
