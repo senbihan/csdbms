@@ -12,7 +12,7 @@
 extern int IS_READ;
 extern int  *DATA_TYPES;
 
-int check_validity(FILE *fp);
+int check_validity();
 void read_from_file(const char *filename);
 
 #endif

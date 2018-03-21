@@ -11,7 +11,6 @@ extern int             NO_RECORDS;
 extern int             NO_COLUMNS;
 extern char            *TABLE_NAME;
 extern int             RECORD_SIZE;
-extern int             TOTAL_RECORD_SIZE;
 extern int              DATA_HEAD;
 extern int              DATA_END;
 extern struct Column   *col;

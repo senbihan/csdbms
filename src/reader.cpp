@@ -17,11 +17,11 @@ void open_file(const char *filename)
 }
 
 //check if the file is actually in the correct format
-int check_validity(FILE *fp)
+int check_validity()
 {
-    assert(fp != NULL);
+    assert(frptr != NULL);
     char *dest = Malloc(char,FILE_HEADER_SIZE);
-    fread(dest,sizeof(char),FILE_HEADER_SIZE,fp);
+    fread(dest,sizeof(char),FILE_HEADER_SIZE,frptr);
     return (strcmp("CS",dest) == 0);
 }
 
@@ -30,6 +30,12 @@ void read_record_no()
     assert(frptr != NULL);
     fseek(frptr,NO_REC_POSITION,SEEK_SET);
     fread(&NO_RECORDS,RECORD_NO_SIZE,1,frptr);
+}
+
+void read_timestamp()
+{
+    long tm;
+    fread(&tm,DATE_TIME_SIZE,1,frptr);
 }
 
 void read_column_no()
@@ -101,9 +107,10 @@ void read_from_file(const char *filename)
     //scanf("%s",file_name);
     open_file(filename);
 
-    if(!check_validity(frptr))
+    if(!check_validity())
         ERR_MESG("reader : file format is not valid!");
 
+    read_timestamp();
     read_record_no();
     //printf("File Details: \n\n");
     //printf("Records : %d\n",NO_RECORDS);

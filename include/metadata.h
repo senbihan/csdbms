@@ -19,7 +19,6 @@ int             NO_RECORDS;
 int             NO_COLUMNS;
 char*           TABLE_NAME;
 int             RECORD_SIZE;
-int             TOTAL_RECORD_SIZE;
 int             DATA_HEAD;
 int             DATA_END;
 struct Column   *col;
