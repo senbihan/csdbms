@@ -58,6 +58,7 @@
 #define LAST_REC_NO_SIZE        4 
 #define FIRST_REC_NO_SIZE       4 
 #define TOTAL_REC_SIZE          4
+#define BUFFER_SIZE             0
 /* Variable Portion */
 
 #define COLUMN_DETAILS_SIZE     32
@@ -103,7 +104,7 @@
 #define TOTAL_REC_POS           LAST_REC_NO_POS + TOTAL_REC_SIZE
 #define COL_DESC_POS            TOTAL_REC_POS + LAST_REC_NO_SIZE 
 
-#define D_END                   DATA_HEAD + (LAST_REC_NO * BLOCK_SIZE)
+#define D_END                   DATA_HEAD + (TOTAL_RECORD * BLOCK_SIZE)
 #define BLOCK_START(i)          DATA_HEAD + (i - 1) * BLOCK_SIZE
 
 struct Column

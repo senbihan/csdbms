@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 #include "user_interface.h"
+#include "operations.h"
 using namespace std;
 
 char* readInt_t(){   
@@ -30,6 +31,7 @@ int main(void)
     */
 
     start_session();
-
+    //char *file = "products";
+    //insert_data(file);
     return 0;
 }

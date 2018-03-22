@@ -46,10 +46,10 @@ void write_table_name()
 
 void write_data_head()
 {
-    //printf("writing at %d\n",ftell(fptr));
     DATA_HEAD = ftell(fptr) + DATA_HEAD_SIZE + DATA_END_SIZE ;
     DATA_HEAD += FIRST_REC_NO_SIZE + LAST_REC_NO_SIZE + TOTAL_REC_SIZE;
     DATA_HEAD += NO_COLUMNS * sizeof(struct Column);
+    DATA_HEAD += BUFFER_SIZE;
     fwrite(&DATA_HEAD, DATA_HEAD_SIZE, 1, fptr);
 }
 

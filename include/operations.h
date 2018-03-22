@@ -27,7 +27,7 @@ extern std::unordered_map<std::variant<int,char*>,int> hash_table;
 
 void show_schema(const char *);
 void build_hash_table(const char *);
-void insert_data(const char *, int);
+void insert_data(const char *);
 void delete_data_from_rec(const char *, int );
 void delete_data(const char *, std::map<std::string,std::variant<int,std::string> >);
 void show_data(const char *, std::map<std::string,std::variant<int,std::string> >);

@@ -63,7 +63,7 @@ void start_session()
                 printf("\nINSERTION: Number of insertions: ");
                 i = 0;
                 scanf("%d",&c);
-                while(i++ < c)  insert_data(file,1);
+                while(i++ < c)  insert_data(file);
                 printf("%d row inserted\n",c);
                 break;
             case 3:

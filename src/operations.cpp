@@ -12,10 +12,11 @@ using namespace std;
 void show_schema(const char *filename)
 {
     if(!IS_READ){
-        printf("\nSHOW_SCHEMA : Opening file.... %s\n",filename);
+        cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
         read_from_file(filename);
     }
     printf("Relation Schema: \n");
+    printf("----------------------------------------\n");
     printf("----------------------------------------\n");
     for(int i = 0 ; i < NO_COLUMNS; i++){
         cout << col[i].col_name << "\t";
@@ -23,22 +24,28 @@ void show_schema(const char *filename)
         cout << "(" << int(col[i].size) << ")\t";
         printf("\n");
     }
-    printf("\nNO of Records : %d\n",NO_RECORDS);
+    printf("\nNumber of Records present: %d\n",NO_RECORDS);
     printf("Primary Key : %s\n",col[PRIMARY_KEY_COL_NO].col_name);
     printf("----------------------------------------\n");
+    printf("----------------------------------------\n");
+    
 }
+
+
+
+
+
 
 /********************************************* INSERT FUNCTION ***********************************************/
 
-void insert_data(const char *filename, int num_ins = 1)
+void insert_data(const char *filename, int num_ins, char **values)
 {
     if(!IS_READ){
-        printf("\nINSERTION : Opening file.... %s\n",filename);
+        cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
         read_from_file(filename);
     }
     FILE *fp = fopen(filename, "rb+");
     assert(fp != NULL);
-    int int_data;
     char *dest = Malloc(char,255);
     char *blank = (char*)calloc(BLOCK_SIZE - (RECORD_SIZE + 2*PTR_SIZE), sizeof(char));
     assert(dest != NULL && blank != NULL);
@@ -130,16 +137,20 @@ void insert_data(const char *filename, int num_ins = 1)
     // Update Index call
 
     // write the data
-    for(int i = 0 ; i < NO_COLUMNS ; i++){
-        if(DATA_TYPES[i] == INTEGER){          
-            scanf("%d",&int_data);
-            assert(int_data <= MAX_VALUE_INT(int(col[i].size)));
-            fwrite(&int_data,int(sizeof(int)),1,fp);
-        }
-        else if(DATA_TYPES[i] == STRING){
-            scanf("%s",dest);
-            assert(strlen(dest) <= (unsigned int)(col[i].size));
-            fwrite(dest,sizeof(char),255,fp);
+    int temp;
+    for(int i = 0 ; i < NO_COLUMNS ; i++)
+    {
+        switch(DATA_TYPES[i])
+        {
+            case INTEGER :        
+                temp = atoi(values[i]);
+                fwrite(&temp,sizeof(int),1,fp);
+                break;
+            case STRING :
+                fwrite(values[i],sizeof(char),(unsigned int)col[i].size,fp);
+                break;
+            default :
+                break;
         }
     }
 
@@ -161,7 +172,9 @@ void insert_data(const char *filename, int num_ins = 1)
     ++NO_RECORDS;
     fseek(fp,NO_REC_POSITION,SEEK_SET);
     fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
-
+    DATA_END = D_END;
+    fseek(fp,DATA_END_POSITION,SEEK_SET);
+    fwrite(&DATA_END,DATA_END_SIZE,1,fp);
     //printf("Last record no: %d\n",LAST_REC_NO);
     //printf("Total Records: %d\n",TOTAL_RECORD);
 
@@ -169,6 +182,54 @@ void insert_data(const char *filename, int num_ins = 1)
     free(blank);
     fclose(fp);
 }
+
+void insert_data(const char *filename)
+{
+    if(!IS_READ){
+        cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
+         read_from_file(filename);
+    }
+
+    char *values[NO_COLUMNS];
+    string stemp;
+    for(int i = 0 ; i < NO_COLUMNS ; i++)
+    {
+        cin >> stemp;
+        switch(DATA_TYPES[i])
+        {         
+            case INTEGER :
+                assert(stemp.length() <= (unsigned int)(col[i].size));
+                values[i] = Malloc(char,4);
+                strncpy(values[i],stemp.c_str(),4);
+                break;
+
+            case STRING :
+                assert(stemp.length() <= (unsigned int)(col[i].size));
+                values[i] = Malloc(char,stemp.length());
+                strncpy(values[i],stemp.c_str(),(unsigned int)(col[i].size));
+                break;
+            
+            default:
+                break;
+        }
+    }
+
+    insert_data(filename,1,values);
+    for(int i = 0 ; i < NO_COLUMNS ; i++)   free(values[i]);
+}
+
+/*********************************** Insert Ends Here **********************************/
+
+
+
+
+
+
+
+
+
+
+
 
 /*********************************** SELECTION ****************************************/
 
@@ -226,10 +287,21 @@ vector<int> select_data(const char* filename, FILE *fp, map<string,variant<int,s
         blockNo = next;
         fseek(fp,BLOCK_START(next),SEEK_SET);
     }while(true);
-
+    
     free(dest);
     return record_numbers;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 /********************************* DELETE ********************************/
 /**
@@ -237,6 +309,20 @@ vector<int> select_data(const char* filename, FILE *fp, map<string,variant<int,s
  * 
  * @param: filename, File pointer, record no *
  * */
+
+inline void reset_all(FILE *fp)
+{
+    LAST_REC_NO = 0;
+    FIRST_REC_NO = 1;
+    TOTAL_RECORD = 0;
+    fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
+    fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
+    fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+    fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+    fseek(fp,TOTAL_REC_POS,SEEK_SET);
+    fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
+}
+
 void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
 {
     if(!IS_READ){
@@ -267,24 +353,14 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
         --NO_RECORDS;
         fseek(fp,NO_REC_POSITION,SEEK_SET);
         fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
-        if(NO_RECORDS == 0)
-        {
-            // reset all
-            LAST_REC_NO = 0;
-            FIRST_REC_NO = 1;
-            TOTAL_RECORD = 0;
-            fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
-            fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
-            fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-            fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
-            fseek(fp,TOTAL_REC_POS,SEEK_SET);
-            fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
-        }
+        if(NO_RECORDS == 0) reset_all(fp);      // reset
         return ;
     }
 
     if(recNo == FIRST_REC_NO)
     {
+        // if the first record is deleted
+        // change the first to the next of first
         FIRST_REC_NO = next;
         fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
         fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
@@ -320,19 +396,7 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
     --NO_RECORDS;
     fseek(fp,NO_REC_POSITION,SEEK_SET);
     fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
-    if(NO_RECORDS == 0)
-    {
-        // reset all
-        LAST_REC_NO = 0;
-        FIRST_REC_NO = 1;
-        TOTAL_RECORD = 0;
-        fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
-        fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
-        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
-        fseek(fp,TOTAL_REC_POS,SEEK_SET);
-        fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
-    }
+    if(NO_RECORDS == 0) reset_all(fp);      // reset
 }
 
 void delete_data(const char *filename, map<string,variant<int,string> >cond)
@@ -344,6 +408,14 @@ void delete_data(const char *filename, map<string,variant<int,string> >cond)
     fclose(fp);
     printf("%d records deleted\n",(int)record_no.size());    
 }
+
+
+
+
+
+
+
+
 
 /******************************* DISPLAY ********************************/
 
@@ -370,11 +442,13 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
     if(cond.empty()){
         // No condition show all
         for(int i = 0 ; i < NO_COLUMNS; i++)
-            printf("%-12s",col[i].col_name);
+            printf("%-20s",col[i].col_name);
         printf("\n");
         for(int i = 0 ; i < NO_COLUMNS; i++)
-            printf("----------");
+            for(int j = 0 ; j < int(col[i].size); j++)
+                printf("--");
         printf("\n");
+        
         //printf("FIRST REC NO %d\n",FIRST_REC_NO);
         //printf("Last rec no: %d\n",LAST_REC_NO);
         int current = FIRST_REC_NO;
@@ -389,11 +463,11 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
             for(int j = 0 ; j < NO_COLUMNS; j++){
                 if(DATA_TYPES[j] == 1){          
                     fread(&int_data,sizeof(int),1,fp);
-                    printf("%-12d",int_data);
+                    printf("%-20d",int_data);
                 }
                 else if(DATA_TYPES[j] == 3){
                     fread(dest,sizeof(char),255,fp);
-                    printf("%-12s",dest);
+                    printf("%-20s",dest);
                 }
             }
             //system("read n");
@@ -413,22 +487,25 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
             printf("No records found!\n");
             return ;
         }
+        
         for(int i = 0 ; i < NO_COLUMNS; i++)
-            printf("%-12s",col[i].col_name);
+            printf("%-20s",col[i].col_name);
         printf("\n");
         for(int i = 0 ; i < NO_COLUMNS; i++)
-            printf("----------");
+            for(int j = 0 ; j < int(col[i].size); j++)
+                printf("--");
         printf("\n");
+
         for(int r : rec_no){
             fseek(fp,BLOCK_START(r),SEEK_SET);
             for(int j = 0 ; j < NO_COLUMNS; j++){
                 if(DATA_TYPES[j] == 1){          
                     fread(&int_data,sizeof(int),1,fp);
-                    printf("%-12d",int_data);
+                    printf("%-20d",int_data);
                 }
                 else if(DATA_TYPES[j] == 3){
                     fread(dest,sizeof(char),255,fp);
-                    printf("%-12s",dest);
+                    printf("%-20s",dest);
                 }
             }
             printf("\n");
