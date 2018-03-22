@@ -143,7 +143,7 @@ char *create_db()
     for(int i = 0 ; i < NO_COLUMNS; i++)
     {
         scanf("%s",col[i].col_name);
-        col[i].index = i + 1;
+        col[i].index = 1;   // present
         scanf(" %c",&ctype);
         switch(ctype){
             case 'i' :      type = 1; break;

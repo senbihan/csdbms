@@ -111,7 +111,7 @@ struct Column
     char    col_name[COLUMN_NAME_SIZE];
     char    data_type;
     char    index;
-    char    size; // 1 byte rep will be added later
+    char    size;
     char    frac_part_size;
 };
 
