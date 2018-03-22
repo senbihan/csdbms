@@ -115,5 +115,6 @@ struct Column
     char    frac_part_size;
 };
 
+#define MAX_VALUE_INT(size)     int(pow(10,size+1)) - 1 
 
 #endif // STRUCT_INFO_H

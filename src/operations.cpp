@@ -131,14 +131,14 @@ void insert_data(const char *filename, int num_ins = 1)
 
     // write the data
     for(int i = 0 ; i < NO_COLUMNS ; i++){
-        if(DATA_TYPES[i] == 1){          
+        if(DATA_TYPES[i] == INTEGER){          
             scanf("%d",&int_data);
-            assert(int_data <= MAX_INTEGER);
+            assert(int_data <= MAX_VALUE_INT(int(col[i].size)));
             fwrite(&int_data,int(sizeof(int)),1,fp);
         }
-        else if(DATA_TYPES[i] == 3){
+        else if(DATA_TYPES[i] == STRING){
             scanf("%s",dest);
-            assert(strlen(dest) <= 255);
+            assert(strlen(dest) <= (unsigned int)(col[i].size));
             fwrite(dest,sizeof(char),255,fp);
         }
     }
