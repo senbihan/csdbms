@@ -315,12 +315,9 @@ inline void reset_all(FILE *fp)
     LAST_REC_NO = 0;
     FIRST_REC_NO = 1;
     TOTAL_RECORD = 0;
-    fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
-    fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
-    fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-    fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
-    fseek(fp,TOTAL_REC_POS,SEEK_SET);
-    fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
+    write_first_rec_no(fp);
+    write_last_rec_no(fp);
+    write_total_rec(fp);
 }
 
 void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
@@ -348,11 +345,9 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
         fread(&temp,PTR_SIZE,1,fp);
         // update last record no
         LAST_REC_NO = temp;
-        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+        write_last_rec_no(fp);
         --NO_RECORDS;
-        fseek(fp,NO_REC_POSITION,SEEK_SET);
-        fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
+        write_no_records(fp);
         if(NO_RECORDS == 0) reset_all(fp);      // reset
         return ;
     }
@@ -362,8 +357,7 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
         // if the first record is deleted
         // change the first to the next of first
         FIRST_REC_NO = next;
-        fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
-        fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
+        write_first_rec_no(fp);
         // update its previous = 0
         int temp = 0;
         fseek(fp,BLOCK_START(FIRST_REC_NO), SEEK_SET);
@@ -385,17 +379,16 @@ void delete_data_from_rec(const char *filename, FILE *fp, int recNo)
     fread(&temp,PTR_SIZE,1,fp); // temp = last->next
     fseek(fp,BLOCK_START(LAST_REC_NO) + PTR_SIZE ,SEEK_SET);
     fwrite(&recNo,PTR_SIZE,1,fp); // last->next = curr
-    prev = LAST_REC_NO; // curr->prev = last
+    prev = LAST_REC_NO; 
     fseek(fp,BLOCK_START(recNo), SEEK_SET);
-    fwrite(&prev,PTR_SIZE,1,fp);
+    fwrite(&prev,PTR_SIZE,1,fp);  // curr->prev = last
     fwrite(&temp,PTR_SIZE,1,fp);  //curr->next = temp
     if(temp != 0){
         fseek(fp,BLOCK_START(temp), SEEK_SET);
         fwrite(&recNo,PTR_SIZE,1,fp);// temp->prev = curr
     }
     --NO_RECORDS;
-    fseek(fp,NO_REC_POSITION,SEEK_SET);
-    fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
+    write_no_records(fp);
     if(NO_RECORDS == 0) reset_all(fp);      // reset
 }
 
@@ -408,9 +401,6 @@ void delete_data(const char *filename, map<string,variant<int,string> >cond)
     fclose(fp);
     printf("%d records deleted\n",(int)record_no.size());    
 }
-
-
-
 
 
 
@@ -441,6 +431,7 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
     char *dest = Malloc(char,255);
     if(cond.empty()){
         // No condition show all
+        // print Column Head
         for(int i = 0 ; i < NO_COLUMNS; i++)
             printf("%-20s",col[i].col_name);
         printf("\n");
@@ -449,17 +440,12 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
                 printf("--");
         printf("\n");
         
-        //printf("FIRST REC NO %d\n",FIRST_REC_NO);
-        //printf("Last rec no: %d\n",LAST_REC_NO);
         int current = FIRST_REC_NO;
         fseek(fp,BLOCK_START(current),SEEK_SET);
         int prev, next;
         do{
-            //printf("current : %d ",current);
             fread(&prev,PTR_SIZE,1,fp);
-            //printf("previous : %-12d",prev);
             fread(&next,PTR_SIZE,1,fp);
-            //printf("next : %-12d",next);
             for(int j = 0 ; j < NO_COLUMNS; j++){
                 if(DATA_TYPES[j] == 1){          
                     fread(&int_data,sizeof(int),1,fp);
@@ -470,19 +456,15 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
                     printf("%-20s",dest);
                 }
             }
-            //system("read n");
             if(current == LAST_REC_NO || next == 0)   break;  // end of data
             fseek(fp,BLOCK_START(next),SEEK_SET);
             current = next;
             printf("\n");
         }while(true);
         printf("\n");
-        //free(dest);
     }
     else{
         vector<int>rec_no = select_data(filename,fp,cond);
-        //printf("got returned from selection\n");
-        //system("read n");
         if(rec_no.size() == 0){
             printf("No records found!\n");
             return ;
@@ -497,7 +479,7 @@ void show_data(const char *filename, map<string,variant<int,string> >cond)
         printf("\n");
 
         for(int r : rec_no){
-            fseek(fp,BLOCK_START(r),SEEK_SET);
+            fseek(fp,BLOCK_START(r) + 2*PTR_SIZE,SEEK_SET);
             for(int j = 0 ; j < NO_COLUMNS; j++){
                 if(DATA_TYPES[j] == 1){          
                     fread(&int_data,sizeof(int),1,fp);
