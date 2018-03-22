@@ -135,7 +135,7 @@ char *create_db()
     CUM_POS = Malloc(int,NO_COLUMNS);
     assert(col != NULL && data_types != NULL);
     char ctype;
-    int t, type, cons;
+    int sz, type, cons;
     PRIMARY_KEY_COL_NO = -1;
     LAST_REC_NO = 0;
     FIRST_REC_NO = 1;
@@ -146,11 +146,11 @@ char *create_db()
         col[i].index = 1;   // present
         scanf(" %c",&ctype);
         switch(ctype){
-            case 'i' :      type = 1; break;
-            case 'r' :      type = 2; break;
-            case 's' :      type = 3; break;
-            case 'd' :      type = 4; break;
-            case 't' :      type = 5; break;
+            case 'i' :      type = INTEGER; break;
+            case 'r' :      type = DOUBLE; break;
+            case 's' :      type = STRING; break;
+            case 'd' :      type = DATE; break;
+            case 't' :      type = TIME; break;
             default  :      ERR_MESG("No proper data type found\n");
         }
         //printf("Constraint : \n1. Primary Key \n2. Not Null \n3. Auto INCR \n0.Default");
@@ -162,13 +162,19 @@ char *create_db()
         
         // make 1 Byte rep of type and constraint;
         col[i].data_type = get_type(type, cons);
-        scanf("%d",&t);
-        col[i].size = char(t);
-        if(type == 1)   assert(col[i].size <= 9); // +1e9
+        scanf("%d",&sz);
+        col[i].size = char(sz);
+        
+        switch(type)
+        {
+            case INTEGER:   assert(sz <= INT_MAX_DIGIT); break;
+            case STRING :   assert(sz <= STR_MAX_SIZE); break;
+            default :  assert(0 == 0);
+        }
 
-        // need to add the calculation of length
-        RECORD_SIZE += TYPE_SIZE[type];
-        CUM_POS[i] = i == 0 ? 0 : CUM_POS[i-1] + TYPE_SIZE[type];
+        // length calculation
+        RECORD_SIZE += type == STRING ? sz * TYPE_SIZE[type] : TYPE_SIZE[type];
+        CUM_POS[i] = i == 0 ? 0 : CUM_POS[i-1] + (type == STRING ? sz * TYPE_SIZE[type] : TYPE_SIZE[type]);
     }
 
     write_to_file();

@@ -135,7 +135,6 @@ void read_from_file(const char *filename)
     assert(col != NULL);
     DATA_TYPES = Malloc(int,NO_COLUMNS);
     assert(DATA_TYPES != NULL);
-
     
     read_columns();
     PRIMARY_KEY_COL_NO = -1;
@@ -145,7 +144,7 @@ void read_from_file(const char *filename)
         //printf("%s \t %d\n",col[i].col_name,DATA_TYPES[i]);
         string s(col[i].col_name);
         COL_NT[s] = DATA_TYPES[i];
-        if(get_const_int(col[i].data_type))
+        if(get_const_int(col[i].data_type) == 0)    // 0 : primary key
             PRIMARY_KEY_COL_NO = i;
         //col[i].print_col();
     }

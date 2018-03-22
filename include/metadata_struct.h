@@ -27,7 +27,7 @@
 
 #define INT_MAX_DIGIT           9
 #define INT_BYTE_SIZE           5                
-#define MAX_INTEGER             (int(1e10)-1)
+#define MAX_INTEGER             999999999
 #define MAX_RECORDS             2048
 #define MAX_COLUMNS             255
 #define STR_MAX_SIZE            255
@@ -67,17 +67,17 @@
 // first 3-bits : data type, next 3-bits: Constraint info
 /**
  *  Datatypes: 
- *  int     :   001
- *  double  :   010
- *  string  :   011
- *  date    :   100
- *  time    :   101
+ *  int     :   000
+ *  double  :   001
+ *  string  :   010
+ *  date    :   011
+ *  time    :   100
  * 
  * Constriants:
- *  primary :   001
- *  not null:   010
- *  auto increment: 011
- *  default: 000
+ *  primary :   000
+ *  not null:   001
+ *  auto increment: 010
+ *  default: 011
  **/
 
 #define DATA_LEN_SIZE           1  

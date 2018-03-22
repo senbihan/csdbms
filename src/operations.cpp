@@ -4,6 +4,7 @@
  **/
 
 #include <bits/stdc++.h>
+#include <variant>
 #include "reader.h"
 #include "operations.h"
 using namespace std;
