@@ -23,20 +23,26 @@ void write_file_header()
     fwrite("CS",sizeof(char),FILE_HEADER_SIZE,fptr);
 }
 
-void write_timestamp()
+void write_timestamp(FILE *fp)
 {
+    assert(fp != NULL);
+    fseek(fp,DATE_TIME_POSITION,SEEK_SET);
     long tm = 0;
-    fwrite(&tm,DATE_TIME_SIZE,1,fptr);
+    fwrite(&tm,DATE_TIME_SIZE,1,fp);
 }
 
-void write_no_records()
+void write_no_records(FILE *fp)
 {
-    fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fptr);
+    assert(fp != NULL);
+    fseek(fp,NO_REC_POSITION,SEEK_SET);
+    fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
 }
 
-void write_no_columns()
+void write_no_columns(FILE *fp)
 {
-    fwrite(&NO_COLUMNS,COLUMN_NO_SIZE,1,fptr);
+    assert(fp != NULL);
+    fseek(fp,NO_COL_POSITION,SEEK_SET);
+    fwrite(&NO_COLUMNS,COLUMN_NO_SIZE,1,fp);
 }
 
 void write_table_name()
@@ -53,10 +59,12 @@ void write_data_head()
     fwrite(&DATA_HEAD, DATA_HEAD_SIZE, 1, fptr);
 }
 
-void write_data_end()
+void write_data_end(FILE *fp)
 {
+    assert(fp != NULL);
+    fseek(fp,DATA_END_POSITION,SEEK_SET);
     DATA_END = D_END;
-    fwrite(&DATA_END, DATA_END_SIZE, 1, fptr);
+    fwrite(&DATA_END, DATA_END_SIZE, 1, fp);
 }
 
 void write_size_of_records()
@@ -64,20 +72,26 @@ void write_size_of_records()
     fwrite(&RECORD_SIZE,RECORD_SIZE_SIZE,1,fptr);
 }
 
-void write_first_rec_no()
+void write_first_rec_no(FILE *fp)
 {
-    fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fptr);
+    assert(fp != NULL);
+    fseek(fp,FIRST_REC_NO_POS,SEEK_SET);
+    fwrite(&FIRST_REC_NO,FIRST_REC_NO_SIZE,1,fp);
 }
 
 
-void write_last_rec_no()
+void write_last_rec_no(FILE *fp)
 {
-    fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fptr);
+    assert(fp != NULL);
+    fseek(fp,LAST_REC_NO_POS,SEEK_SET);
+    fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
 }
 
-void write_total_rec()
+void write_total_rec(FILE *fp)
 {
-    fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fptr);
+    assert(fp != NULL);
+    fseek(fp,TOTAL_REC_POS,SEEK_SET);
+    fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
 }
 
 /**
@@ -92,16 +106,16 @@ void write_to_file()
 {
     assert(fptr != NULL);
     write_file_header();
-    write_timestamp();
-    write_no_records();
-    write_no_columns();
+    write_timestamp(fptr);
+    write_no_records(fptr);
+    write_no_columns(fptr);
     write_table_name();
     write_size_of_records();
     write_data_head();
-    write_data_end();
-    write_first_rec_no();
-    write_last_rec_no();
-    write_total_rec();
+    write_data_end(fptr);
+    write_first_rec_no(fptr);
+    write_last_rec_no(fptr);
+    write_total_rec(fptr);
     write_columns();
 }
 

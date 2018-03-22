@@ -6,6 +6,7 @@
 #include <bits/stdc++.h>
 #include <variant>
 #include "reader.h"
+#include "writer.h"
 #include "operations.h"
 using namespace std;
 
@@ -38,24 +39,31 @@ void show_schema(const char *filename)
 
 /********************************************* INSERT FUNCTION ***********************************************/
 
+bool is_valid_int(string s)
+{
+    unsigned i = 0;
+    if(s[i] == '-') i++;
+    for( ; i < s.length() ; i++)
+        if(s[i] < '0' || s[i] > '9')
+            return false;
+    return true;
+}
+
 void insert_data(const char *filename, int num_ins, char **values)
 {
     if(!IS_READ){
-        cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
+        cout << "\nINSERT DATA : Opening file.... " << filename << "\n";
         read_from_file(filename);
     }
     FILE *fp = fopen(filename, "rb+");
     assert(fp != NULL);
-    char *dest = Malloc(char,255);
     char *blank = (char*)calloc(BLOCK_SIZE - (RECORD_SIZE + 2*PTR_SIZE), sizeof(char));
-    assert(dest != NULL && blank != NULL);
-    int last_next;
+    assert(blank != NULL);
     // build index if not already built
 
 
-    int record_no_ins;
-    int prev = -1, next = -1;
-    int iden = 0;
+    int record_no_ins, last_next;
+    int prev = -1, next = -1, iden = 0;
     if(LAST_REC_NO == 0 && TOTAL_RECORD == 0)
     {
         // No records in the database and no slot is also there 
@@ -65,12 +73,9 @@ void insert_data(const char *filename, int num_ins, char **values)
         TOTAL_RECORD++;
         record_no_ins = 1;
         // update total records
-        fseek(fp,TOTAL_REC_POS,SEEK_SET);
-        fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
+        write_total_rec(fp);
         // update last
-        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
-
+        write_last_rec_no(fp);
         // update will be at this position
         fseek(fp,BLOCK_START(LAST_REC_NO),SEEK_SET);
         // write previous and next
@@ -83,9 +88,7 @@ void insert_data(const char *filename, int num_ins, char **values)
         // a linked list is already built, so follow that. go to last
         LAST_REC_NO++;
         // update last
-        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
-
+        write_last_rec_no(fp);
         fseek(fp,BLOCK_START(LAST_REC_NO) + 2* PTR_SIZE ,SEEK_SET);
         record_no_ins = LAST_REC_NO;
         // no need to update prev and next
@@ -102,8 +105,7 @@ void insert_data(const char *filename, int num_ins, char **values)
             // go to next and write there
             LAST_REC_NO = last_next;
             // update last
-            fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-            fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+            write_last_rec_no(fp);
 
             fseek(fp,BLOCK_START(last_next) + 2*PTR_SIZE,SEEK_SET);
             record_no_ins = last_next;
@@ -142,7 +144,7 @@ void insert_data(const char *filename, int num_ins, char **values)
     {
         switch(DATA_TYPES[i])
         {
-            case INTEGER :        
+            case INTEGER :      
                 temp = atoi(values[i]);
                 fwrite(&temp,sizeof(int),1,fp);
                 break;
@@ -161,43 +163,41 @@ void insert_data(const char *filename, int num_ins, char **values)
     if(iden)
     {
         // update TOTAL_RECORD
-        fseek(fp,TOTAL_REC_POS,SEEK_SET);
-        fwrite(&TOTAL_RECORD,TOTAL_REC_SIZE,1,fp);
+        write_total_rec(fp);
         // update last
         LAST_REC_NO = TOTAL_RECORD;
-        fseek(fp,LAST_REC_NO_POS,SEEK_SET);
-        fwrite(&LAST_REC_NO,LAST_REC_NO_SIZE,1,fp);
+        write_last_rec_no(fp);
     }
 
     ++NO_RECORDS;
-    fseek(fp,NO_REC_POSITION,SEEK_SET);
-    fwrite(&NO_RECORDS,RECORD_NO_SIZE,1,fp);
-    DATA_END = D_END;
-    fseek(fp,DATA_END_POSITION,SEEK_SET);
-    fwrite(&DATA_END,DATA_END_SIZE,1,fp);
-    //printf("Last record no: %d\n",LAST_REC_NO);
-    //printf("Total Records: %d\n",TOTAL_RECORD);
-
-    free(dest);
+    write_no_records(fp);
+    write_data_end(fp);
     free(blank);
     fclose(fp);
 }
 
-void insert_data(const char *filename)
+bool insert_data(const char *filename)
 {
     if(!IS_READ){
-        cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
+        cout << "\nINSERT DATA : Opening file.... " << filename << "\n";
          read_from_file(filename);
     }
 
     char *values[NO_COLUMNS];
     string stemp;
-    for(int i = 0 ; i < NO_COLUMNS ; i++)
+    int i;
+    bool inserted = true;
+    for(i = 0 ; i < NO_COLUMNS ; i++)
     {
         cin >> stemp;
         switch(DATA_TYPES[i])
         {         
             case INTEGER :
+                if(!is_valid_int(stemp)){
+                    cerr << "DATATYPE MISMATCH ERROR\n";
+                    inserted = false;
+                    break;
+                }
                 assert(stemp.length() <= (unsigned int)(col[i].size));
                 values[i] = Malloc(char,4);
                 strncpy(values[i],stemp.c_str(),4);
@@ -213,9 +213,9 @@ void insert_data(const char *filename)
                 break;
         }
     }
-
-    insert_data(filename,1,values);
-    for(int i = 0 ; i < NO_COLUMNS ; i++)   free(values[i]);
+    if(inserted) insert_data(filename,1,values);
+    //for(int j = 0 ; j < i ; i++)   free(values[j]);
+    return inserted;
 }
 
 /*********************************** Insert Ends Here **********************************/

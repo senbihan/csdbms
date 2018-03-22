@@ -50,7 +50,7 @@ void start_session()
                 break;
             case 1 : 
                 printf("\nCREATE: ");
-                printf("format : {'DB_NAME', 'Number of Columns', \n{'Column Name', 'data type', 'primary key', 'max length'} }\n");
+                printf("format : {'TABLE_NAME', 'Number of Columns', \n{'Column Name', 'data type', 'primary key', 'max length'} }\n");
                 file = create_db();
                 read_from_file(file);
                 printf("Database Loaded successfully\n");
@@ -63,8 +63,8 @@ void start_session()
                 printf("\nINSERTION: Number of insertions: ");
                 i = 0;
                 scanf("%d",&c);
-                while(i++ < c)  insert_data(file);
-                printf("%d row inserted\n",c);
+                while(c--)  if(insert_data(file)) i++;
+                printf("%d row inserted\n",i);
                 break;
             case 3:
                 //printf("Database Name : ");

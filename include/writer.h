@@ -26,6 +26,13 @@ extern int             LAST_REC_NO;
 extern int              TOTAL_RECORD;
 extern std::map<std::string,int> COL_NT;
 
+void write_timestamp(FILE *);
+void write_no_records(FILE *);
+void write_no_columns(FILE *);
+void write_data_end(FILE *);
+void write_first_rec_no(FILE *);
+void write_last_rec_no(FILE *);
+void write_total_rec(FILE *);    
 void write_to_file();
 char* create_db();
 
