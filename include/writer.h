@@ -26,6 +26,7 @@ extern int             LAST_REC_NO;
 extern int             TOTAL_RECORD;
 extern std::map<std::string,int> COL_NT;
 
+char *table_to_file_name(char *);
 void write_timestamp(FILE *);
 void write_no_records(FILE *);
 void write_no_columns(FILE *);

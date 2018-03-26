@@ -3,7 +3,6 @@
  *
  **/
 
-
 #include "writer.h"
 #include <iostream>
 #include <fstream>
@@ -13,6 +12,15 @@ using namespace std;
 FILE *fptr;
 ofstream ofile;
 int *data_types;
+
+char* table_to_file_name(char *tab_name)
+{
+    char ext[4] = ".cs";
+    char *filename = Malloc(char,10);
+    strncpy(filename,tab_name,strlen(tab_name));
+    return strcat(filename,ext);
+}   
+
 void create_db_file(char *fname)
 {
     if(fptr != NULL)    fclose(fptr);
@@ -141,9 +149,12 @@ char *create_db(int argc, char **args)
 {
     TABLE_NAME = Malloc(char, TABLE_NAME_SIZE);
     strcpy(TABLE_NAME,args[2]);
-    create_db_file(TABLE_NAME);
 
-    fptr = fopen(TABLE_NAME,"wb");
+    char *filename = table_to_file_name(TABLE_NAME);
+    
+    create_db_file(filename);
+
+    fptr = fopen(filename,"wb");
     NO_COLUMNS = (argc - 3) / 4;
     NO_RECORDS = 0; // initially 0
     col = Malloc(struct Column, NO_COLUMNS);
@@ -241,7 +252,7 @@ char *create_db(int argc, char **args)
 
     write_to_file();
     fclose(fptr);
-    printf("Database Created Successfully....\n");
+    OK_MESG("\nDatabase Created Successfully....\n");
     return TABLE_NAME;
 }
 

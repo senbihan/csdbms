@@ -9,7 +9,7 @@
 using namespace std;
 
 FILE *frptr;
-
+   
 void open_file(const char *filename)
 {
     if(frptr != NULL)   fclose(frptr);

@@ -12,9 +12,11 @@ using namespace std;
 
 void show_schema(char *filename)
 {
+    char *fname = table_to_file_name(filename);
+    
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
-        read_from_file(filename);
+        read_from_file(fname);
     }
     printf("\n\nRelation Schema: %14s\n",TABLE_NAME);
     printf("----------------------------------------\n");
@@ -191,6 +193,7 @@ bool insert_data(int argc, char **argv)
 {
     char *filename = Calloc(char,10);
     strncpy(filename,argv[2],strlen(argv[2]));
+    filename = table_to_file_name(filename);
     if(!IS_READ || !strcmp(OPEN_FILE,filename)){
         //cout << "\nINSERT DATA : Opening file.... " << filename << "\n";
         read_from_file(filename);
@@ -471,6 +474,7 @@ void delete_data(int argc, char **argv)
 {
     char *filename = Calloc(char,10);
     strncpy(filename,argv[2],strlen(argv[2]));
+    filename = table_to_file_name(filename);
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
         read_from_file(filename);
@@ -600,6 +604,7 @@ void show_data(int argc, char **argv)
 {
     char *filename = Calloc(char,10);
     strncpy(filename,argv[3],strlen(argv[3]));
+    filename = table_to_file_name(filename);
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
         read_from_file(filename);
