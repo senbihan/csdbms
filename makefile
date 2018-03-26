@@ -10,10 +10,10 @@ OBJ= $(addprefix $(ODIR)/, user_interface.o integer.o reader.o writer.o operatio
 INC = $(addprefix $(IDIR)/, integer.h metadata.h metadata_struct.h operations.h \
 		reader.h user_interface.h writer.h)
 # test
-all : test
+all : csdbms
 
-test : $(TST)test_main.cpp $(OBJ)
-	$(CXX) $(CFLAGS) -o $(BIN)test $< $(OBJ) -I $(IDIR)
+csdbms : $(SRC)/main.cpp $(OBJ)
+	$(CXX) $(CFLAGS) -o $(BIN)csdbms $< $(OBJ) -I $(IDIR)
 
 $(ODIR)/%.o : $(SRC)/%.cpp $(INC)
 	$(CXX) $(CFLAGS) -I $(IDIR) -c $< -o $@  

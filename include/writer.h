@@ -21,9 +21,9 @@ extern int             *DATA_TYPES;
 extern int             TYPE_SIZE[6]  ; //= {0, sizeof(int), sizeof(double), sizeof(char), 0 , 0};
 extern int             PRIMARY_KEY_COL_NO;
 extern int             *CUM_POS;
-extern int              FIRST_REC_NO;
+extern int             FIRST_REC_NO;
 extern int             LAST_REC_NO;
-extern int              TOTAL_RECORD;
+extern int             TOTAL_RECORD;
 extern std::map<std::string,int> COL_NT;
 
 void write_timestamp(FILE *);
@@ -34,7 +34,7 @@ void write_first_rec_no(FILE *);
 void write_last_rec_no(FILE *);
 void write_total_rec(FILE *);    
 void write_to_file();
-char* create_db();
+char* create_db(int, char **);
 
 
 #endif //

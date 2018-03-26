@@ -12,17 +12,20 @@ FILE *frptr;
 
 void open_file(const char *filename)
 {
+    if(frptr != NULL)   fclose(frptr);
     frptr = fopen(filename,"rb");
-    if(frptr == NULL)   ERR_MESG("reader : File cannot be opened or doesnot exist!");
+    if(frptr == NULL)   ERR_MESG("reader : File cannot be opened or doesnot exist!\n");
 }
 
 //check if the file is actually in the correct format
-int check_validity()
+int check_validity(FILE *fp)
 {
-    assert(frptr != NULL);
-    char *dest = Malloc(char,FILE_HEADER_SIZE);
-    fread(dest,sizeof(char),FILE_HEADER_SIZE,frptr);
-    return (strcmp("CS",dest) == 0);
+    assert(fp != NULL);
+    char *dest = Calloc(char,FILE_HEADER_SIZE);
+    fread(dest,sizeof(char),FILE_HEADER_SIZE,fp);
+    int ret = strcmp("CS",dest);
+    free(dest);
+    return ret == 0;
 }
 
 void read_record_no()
@@ -107,7 +110,7 @@ void read_from_file(const char *filename)
     //scanf("%s",file_name);
     open_file(filename);
 
-    if(!check_validity())
+    if(!check_validity(frptr))
         ERR_MESG("reader : file format is not valid!");
 
     read_timestamp();
@@ -149,6 +152,8 @@ void read_from_file(const char *filename)
         //col[i].print_col();
     }
     IS_READ = 1;
-    printf("Reading Complete.....\n");
+    OPEN_FILE = Malloc(char,10);
+    strncpy(OPEN_FILE,filename,strlen(filename));
+    //printf("Reading Complete..... Closing..\n");
     fclose(frptr);
 }

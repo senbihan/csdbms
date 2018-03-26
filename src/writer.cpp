@@ -5,8 +5,9 @@
 
 
 #include "writer.h"
-#include <cstdio>
+#include <iostream>
 #include <fstream>
+#include <string>
 using namespace std;
 
 FILE *fptr;
@@ -14,8 +15,10 @@ ofstream ofile;
 int *data_types;
 void create_db_file(char *fname)
 {
+    if(fptr != NULL)    fclose(fptr);
     fptr = fopen(fname,"wb+");
     if(NULL == fptr) ERR_MESG("writer.cpp : file cannot be opened!")
+    fclose(fptr);
 }
 
 void write_file_header()
@@ -134,62 +137,107 @@ char get_type(int type, int cons)
 /**
  * first creation of database
  **/
-char *create_db()
+char *create_db(int argc, char **args)
 {
     TABLE_NAME = Malloc(char, TABLE_NAME_SIZE);
-    //printf("Enter database name: \n");
-    scanf("%s",TABLE_NAME);
+    strcpy(TABLE_NAME,args[2]);
     create_db_file(TABLE_NAME);
-    //printf("Enter Number of Column: \n");
-    scanf("%d",&NO_COLUMNS);
-    NO_RECORDS = 0; // initially 0
 
+    fptr = fopen(TABLE_NAME,"wb");
+    NO_COLUMNS = (argc - 3) / 4;
+    NO_RECORDS = 0; // initially 0
     col = Malloc(struct Column, NO_COLUMNS);
     data_types = Malloc(int, NO_COLUMNS);
     CUM_POS = Malloc(int,NO_COLUMNS);
+    
     assert(col != NULL && data_types != NULL);
-    char ctype;
-    int sz, type, cons;
+    char sz;
+    char *sizeinfo, *consinfo;
+    int  type, cons;
     PRIMARY_KEY_COL_NO = -1;
     LAST_REC_NO = 0;
     FIRST_REC_NO = 1;
     TOTAL_RECORD = 0;
+    int k = 3;
+
+    sizeinfo = Malloc(char,10);
+    consinfo = Malloc(char,10);
+
     for(int i = 0 ; i < NO_COLUMNS; i++)
     {
-        scanf("%s",col[i].col_name);
+        // column name
+        strcpy(col[i].col_name,args[k]);
         col[i].index = 1;   // present
-        scanf(" %c",&ctype);
+        ++k;
+
+        // columne data type
+        char ctype = args[k][0];
         switch(ctype){
             case 'i' :      type = INTEGER; break;
             case 'r' :      type = DOUBLE; break;
             case 's' :      type = STRING; break;
             case 'd' :      type = DATE; break;
             case 't' :      type = TIME; break;
-            default  :      ERR_MESG("No proper data type found\n");
+            default  :      WARN_MESG("Not a proper data type. See Help\n"); return NULL;
         }
-        //printf("Constraint : \n1. Primary Key \n2. Not Null \n3. Auto INCR \n0.Default");
-        scanf("%d",&cons);
-        if(cons == 1){
-            if(PRIMARY_KEY_COL_NO == -1)    PRIMARY_KEY_COL_NO = i;
-            else                            ERR_MESG("Only 1 Primary Key can be assigned");
-        }   
-        
-        // make 1 Byte rep of type and constraint;
-        col[i].data_type = get_type(type, cons);
-        scanf("%d",&sz);
-        col[i].size = char(sz);
-        
+        ++k;
+
+        // data length
+        string temp_string;
+        int j = 0, i_part, f_part;
+        strncpy(sizeinfo,args[k],strlen(args[k]));
         switch(type)
         {
-            case INTEGER:   assert(sz <= INT_MAX_DIGIT); break;
-            case STRING :   assert(sz <= STR_MAX_SIZE); break;
-            default :  assert(0 == 0);
+            case INTEGER:   
+                sz = char(atoi(sizeinfo));
+                assert(sz <= INT_MAX_DIGIT); 
+                break;
+            case STRING :   
+                sz = char(atoi(sizeinfo));
+                assert(sz <= STR_MAX_SIZE); 
+                break;
+            case DOUBLE:
+                j = 0; temp_string = "";
+                while(sizeinfo[j] != ',')   temp_string += sizeinfo[j++];
+                i_part = atoi(temp_string.c_str());
+                assert(i_part <= 10);
+                sz = char(i_part);
+                ++j;
+                sz <<= 4;
+                temp_string = "";
+                while(sizeinfo[j] != '\0')  temp_string += sizeinfo[j++];
+                f_part = atoi(temp_string.c_str());
+                assert(f_part <= 4);    // upto 4 decimal places
+                sz |= char(f_part);
+                break;
+            default :  break;
         }
+        col[i].size = sz;
+        ++k;
 
+        // constraint
+        //strncpy(consinfo,args[k],strlen(args[k]));
+        //for(int j = 0 ; consinfo[j] != '\n'; j++)
+        //{
+            if(args[k][0] == 'p'){
+                if(PRIMARY_KEY_COL_NO == -1)    PRIMARY_KEY_COL_NO = i;
+                else                            ERR_MESG("Only 1 Primary Key can be assigned");
+                cons = 0;
+            }
+            else     cons = 1;
+        //}   
+        ++k;
+
+        // store type
+        col[i].data_type = get_type(type, cons);
         // length calculation
         RECORD_SIZE += type == STRING ? sz * TYPE_SIZE[type] : TYPE_SIZE[type];
         CUM_POS[i] = i == 0 ? 0 : CUM_POS[i-1] + (type == STRING ? sz * TYPE_SIZE[type] : TYPE_SIZE[type]);
+    
     }
+
+    free(consinfo);
+    free(sizeinfo);
 
     write_to_file();
     fclose(fptr);

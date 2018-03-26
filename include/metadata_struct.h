@@ -19,9 +19,12 @@
 
 /*Helper Macros*/
 
-#define Malloc(T,size)  (T*)malloc(size*sizeof(T))
-#define Calloc(T,size)  (T*)calloc(size,sizeof(T))
-#define ERR_MESG(m)     {perror(m); exit(0);}
+#define Malloc(T,size)          (T*)malloc(size*sizeof(T))
+#define Calloc(T,size)          (T*)calloc(size,sizeof(T))
+#define WARN_MESG(m)            {fprintf(stderr,"\033[0;31m");fprintf(stderr,m); fprintf(stderr,"\033[0m");}
+#define ERR_MESG(m)             {fprintf(stderr,"\033[1;31m");fprintf(stderr,m); fprintf(stderr,"\033[0m"); exit(EXIT_FAILURE);}
+#define OK_MESG(m)              {fprintf(stderr,"\033[0;32m");fprintf(stderr,m); fprintf(stderr,"\033[0m");}
+#define FAIL_MESG(m)            {fprintf(stderr,"\033[0;33m");fprintf(stderr,m); fprintf(stderr,"\033[0m");}
 
 /* Constants */
 
@@ -110,10 +113,10 @@
 struct Column
 {
     char    col_name[COLUMN_NAME_SIZE];
-    char    data_type;
+    char    data_type; // type and constraint
     char    index;
     char    size;
-    char    frac_part_size;
+    int     auto_incr;
 };
 
 #define MAX_VALUE_INT(size)     int(pow(10,size+1)) - 1 
