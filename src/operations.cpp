@@ -13,7 +13,7 @@ using namespace std;
 void show_schema(char *filename)
 {
     char *fname = table_to_file_name(filename);
-    
+
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
         read_from_file(fname);
@@ -210,9 +210,9 @@ bool insert_data(int argc, char **argv)
     int sz, int_part_size, frac_part_size;
     bool seen_dot = false; 
     string d_str;
-    for(i = 0 ; i < NO_COLUMNS ; i++)
+    for(i = 0 ; i < NO_COLUMNS ; i++,k++)
     {
-        stemp = string(argv[k+i]);
+        stemp = string(argv[k]);
         switch(DATA_TYPES[i])
         {         
             case INTEGER :
@@ -229,6 +229,10 @@ bool insert_data(int argc, char **argv)
                 break;
 
             case STRING :
+                if(stemp[0] != '\'') { WARN_MESG("Strings must be quoted.\n"); inserted = false; }
+                while(stemp[0] == '\'' && stemp[stemp.length()-1] != '\'')
+                    stemp += " " + string(argv[++k]);
+                stemp = stemp.substr(1,stemp.length()-2);
                 if(!(stemp.length() <= (unsigned int)(col[i].size))){
                     WARN_MESG("Error : NUMBER length is too big\n");
                     inserted = false;
@@ -269,16 +273,6 @@ bool insert_data(int argc, char **argv)
 }
 
 /*********************************** Insert Ends Here **********************************/
-
-
-
-
-
-
-
-
-
-
 
 
 /*********************************** SELECTION ****************************************/
@@ -355,14 +349,6 @@ vector<int> select_data(const char* filename, FILE *fp, map<string,variant<int,s
     free(dest);
     return record_numbers;
 }
-
-
-
-
-
-
-
-
 
 
 
@@ -524,9 +510,6 @@ void delete_data(int argc, char **argv)
     }
     free(filename);
 }
-
-
-
 
 
 
