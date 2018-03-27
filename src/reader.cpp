@@ -9,7 +9,8 @@
 using namespace std;
 
 FILE *frptr;
-   
+
+
 void open_file(const char *filename)
 {
     if(frptr != NULL)   fclose(frptr);
@@ -35,10 +36,11 @@ void read_record_no()
     fread(&NO_RECORDS,RECORD_NO_SIZE,1,frptr);
 }
 
-void read_timestamp()
+void read_timestamp(FILE *fp)
 {
-    long tm;
-    fread(&tm,DATE_TIME_SIZE,1,frptr);
+    assert(fp!= NULL);
+    fseek(fp,DATE_TIME_POSITION,SEEK_SET);
+    fread(&LAST_MOD_TIME,DATE_TIME_SIZE,1,fp);
 }
 
 void read_column_no()
@@ -103,6 +105,25 @@ void read_total_rec()
     fread(&TOTAL_RECORD,TOTAL_REC_SIZE,1,frptr);
 }
 
+struct datetime *get_date_time()
+{
+    long tm = LAST_MOD_TIME;
+    struct datetime *dt = Malloc(struct datetime,1);
+    dt->ss   = tm % 100;
+    tm /= 100;
+    dt->mm   = tm % 100;
+    tm /= 100;
+    dt->hh   = tm % 100;
+    tm /= 100;
+    dt->day   = tm % 100;
+    tm /= 100;
+    dt->month   = tm % 100;
+    tm /= 100;
+    dt->year   = tm % 100;
+    return dt;
+}
+
+
 
 void read_from_file(const char *filename)
 {
@@ -113,7 +134,7 @@ void read_from_file(const char *filename)
     if(!check_validity(frptr))
         ERR_MESG("reader : file format is not valid!");
 
-    read_timestamp();
+    read_timestamp(frptr);
     read_record_no();
     //printf("File Details: \n\n");
     //printf("Records : %d\n",NO_RECORDS);

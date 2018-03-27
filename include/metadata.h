@@ -32,6 +32,7 @@ int             LAST_REC_NO;
 int             TOTAL_RECORD;
 int             IS_READ;
 char*           OPEN_FILE;
+long            LAST_MOD_TIME;
 
 std::unordered_map<std::variant<int,char*>,int> hash_table;
 std::map<std::string,int> COL_NT;

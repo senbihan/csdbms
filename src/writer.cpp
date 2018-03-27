@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <time.h>
 using namespace std;
 
 FILE *fptr;
@@ -38,8 +39,18 @@ void write_timestamp(FILE *fp)
 {
     assert(fp != NULL);
     fseek(fp,DATE_TIME_POSITION,SEEK_SET);
-    long tm = 0;
-    fwrite(&tm,DATE_TIME_SIZE,1,fp);
+    time_t t = time(NULL);
+    struct tm tm_inf = *localtime(&t);
+    long yy     = tm_inf.tm_year + 1900;
+    long mon    = tm_inf.tm_mon + 1;
+    long dd     = tm_inf.tm_mday;
+    long date   = yy * 10000L + mon * 100L + dd;
+    long hh     = tm_inf.tm_hour;
+    long mm     = tm_inf.tm_min;
+    long ss     = tm_inf.tm_sec;
+    LAST_MOD_TIME = ((date * 100L + hh) * 100L + mm ) * 100L + ss; 
+    //printf("writing date time = %ld\n",LAST_MOD_TIME);
+    fwrite(&LAST_MOD_TIME,DATE_TIME_SIZE,1,fp);
 }
 
 void write_no_records(FILE *fp)
@@ -140,6 +151,12 @@ char get_type(int type, int cons)
     data_type |= char(cons);
     data_type <<= 2;
     return data_type;        
+}
+
+void close_file(FILE *fp)
+{
+    write_timestamp(fp);
+    fclose(fp);
 }
 
 /**
@@ -251,7 +268,7 @@ char *create_db(int argc, char **args)
     free(sizeinfo);
 
     write_to_file();
-    fclose(fptr);
+    close_file(fptr);
     OK_MESG("\nDatabase Created Successfully....\n");
     return TABLE_NAME;
 }

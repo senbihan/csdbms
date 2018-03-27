@@ -34,7 +34,7 @@
 #define MAX_RECORDS             2048
 #define MAX_COLUMNS             255
 #define STR_MAX_SIZE            255
-#define BLOCK_SIZE              (1 << 16)
+#define BLOCK_SIZE              (1 << 8)
 #define PTR_SIZE                4
 
 /* Dataypes maps */

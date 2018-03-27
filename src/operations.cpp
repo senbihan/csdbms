@@ -18,6 +18,7 @@ void show_schema(char *filename)
         //cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
         read_from_file(fname);
     }
+    
     printf("\n\nRelation Schema: %14s\n",TABLE_NAME);
     printf("----------------------------------------\n");
     printf("----------------------------------------\n");
@@ -37,6 +38,8 @@ void show_schema(char *filename)
     }
     printf("\nNumber of Records present: %d\n",NO_RECORDS);
     printf("Primary Key : %s\n",col[PRIMARY_KEY_COL_NO].col_name);
+    struct datetime *dtm = get_date_time();
+    printf("Last Modified : %02d/%02d/%d %02d:%02d:%02d\n",dtm->day,dtm->month,dtm->year,dtm->hh,dtm->mm,dtm->ss);
     printf("----------------------------------------\n");
     printf("----------------------------------------\n");
     
@@ -70,7 +73,8 @@ void insert_data(char *filename, char **values)
     // build index if not already built
 
 
-    int record_no_ins, last_next;
+    //int record_no_ins;
+    int last_next;
     int prev = -1, next = -1, iden = 0;
     if(LAST_REC_NO == 0 && TOTAL_RECORD == 0)
     {
@@ -79,7 +83,7 @@ void insert_data(char *filename, char **values)
         prev = next = 0;
         LAST_REC_NO++;
         TOTAL_RECORD++;
-        record_no_ins = 1;
+        //record_no_ins = 1;
         // update total records
         write_total_rec(fp);
         // update last
@@ -98,7 +102,7 @@ void insert_data(char *filename, char **values)
         // update last
         write_last_rec_no(fp);
         fseek(fp,BLOCK_START(LAST_REC_NO) + 2* PTR_SIZE ,SEEK_SET);
-        record_no_ins = LAST_REC_NO;
+        //record_no_ins = LAST_REC_NO;
         // no need to update prev and next
     }
     else
@@ -115,7 +119,7 @@ void insert_data(char *filename, char **values)
             write_last_rec_no(fp);
 
             fseek(fp,BLOCK_START(last_next) + 2*PTR_SIZE,SEEK_SET);
-            record_no_ins = last_next;
+            //record_no_ins = last_next;
             // no need to update prev and next
         }
         else
@@ -137,7 +141,7 @@ void insert_data(char *filename, char **values)
             fwrite(&prev,PTR_SIZE,1,fp);
             fwrite(&next,PTR_SIZE,1,fp);
             iden = 1;
-            record_no_ins = TOTAL_RECORD;
+            //record_no_ins = TOTAL_RECORD;
         }
     }
     
@@ -186,7 +190,7 @@ void insert_data(char *filename, char **values)
     write_no_records(fp);
     write_data_end(fp);
     free(blank);
-    fclose(fp);
+    close_file(fp);
 }
 
 bool insert_data(int argc, char **argv)
@@ -451,7 +455,7 @@ void delete_data_from_db(char *filename, map<string,variant<int,string,long> >co
     vector<int>record_no = select_data(filename, fp, cond);
     for(int r_no : record_no)
         delete_data_from_rec(filename,fp, r_no);
-    fclose(fp);
+    close_file(fp);
     printf("%d records deleted\n",(int)record_no.size());    
 }
 
