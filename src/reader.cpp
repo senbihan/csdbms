@@ -13,7 +13,7 @@ FILE *frptr;
 
 void open_file(const char *filename)
 {
-    if(frptr != NULL)   fclose(frptr);
+    //if(frptr != NULL)   fclose(frptr);
     frptr = fopen(filename,"rb");
     if(frptr == NULL)   ERR_MESG("reader : File cannot be opened or doesnot exist!\n");
 }
@@ -25,7 +25,7 @@ int check_validity(FILE *fp)
     char *dest = Calloc(char,FILE_HEADER_SIZE);
     fread(dest,sizeof(char),FILE_HEADER_SIZE,fp);
     int ret = strcmp("CS",dest);
-    free(dest);
+    //free(dest);
     return ret == 0;
 }
 
@@ -173,7 +173,7 @@ void read_from_file(const char *filename)
         //col[i].print_col();
     }
     IS_READ = 1;
-    OPEN_FILE = Malloc(char,10);
+    OPEN_FILE = Malloc(char,20);
     strncpy(OPEN_FILE,filename,strlen(filename));
     //printf("Reading Complete..... Closing..\n");
     fclose(frptr);

@@ -8,13 +8,14 @@
 #include "reader.h"
 #include "writer.h"
 #include "operations.h"
+#include "index_operations.h"
 using namespace std;
 
 void show_schema(char *filename)
 {
     char *fname = table_to_file_name(filename);
 
-    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+    if(!IS_READ || strcmp(OPEN_FILE,fname) != 0){
         //cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
         read_from_file(fname);
     }
@@ -73,7 +74,7 @@ void insert_data(char *filename, char **values)
     // build index if not already built
 
 
-    //int record_no_ins;
+    int record_no_ins;
     int last_next;
     int prev = -1, next = -1, iden = 0;
     if(LAST_REC_NO == 0 && TOTAL_RECORD == 0)
@@ -83,7 +84,7 @@ void insert_data(char *filename, char **values)
         prev = next = 0;
         LAST_REC_NO++;
         TOTAL_RECORD++;
-        //record_no_ins = 1;
+        record_no_ins = 1;
         // update total records
         write_total_rec(fp);
         // update last
@@ -102,7 +103,7 @@ void insert_data(char *filename, char **values)
         // update last
         write_last_rec_no(fp);
         fseek(fp,BLOCK_START(LAST_REC_NO) + 2* PTR_SIZE ,SEEK_SET);
-        //record_no_ins = LAST_REC_NO;
+        record_no_ins = LAST_REC_NO;
         // no need to update prev and next
     }
     else
@@ -119,7 +120,7 @@ void insert_data(char *filename, char **values)
             write_last_rec_no(fp);
 
             fseek(fp,BLOCK_START(last_next) + 2*PTR_SIZE,SEEK_SET);
-            //record_no_ins = last_next;
+            record_no_ins = last_next;
             // no need to update prev and next
         }
         else
@@ -141,7 +142,7 @@ void insert_data(char *filename, char **values)
             fwrite(&prev,PTR_SIZE,1,fp);
             fwrite(&next,PTR_SIZE,1,fp);
             iden = 1;
-            //record_no_ins = TOTAL_RECORD;
+            record_no_ins = TOTAL_RECORD;
         }
     }
     
@@ -159,13 +160,20 @@ void insert_data(char *filename, char **values)
             case INTEGER :      
                 temp = atoi(values[i]);
                 fwrite(&temp,sizeof(int),1,fp);
+                // uodate index call
+                if(i == PRIMARY_KEY_COL_NO)
+                {
+                	bool ret = indexInsert(temp,(unsigned long long)record_no_ins,table_name_to_index(TABLE_NAME));
+            		if(ret == false)
+            			WARN_MESG("Index File not updated!");
+                }
                 break;
             case STRING :
                 fwrite(values[i],sizeof(char),(unsigned int)col[i].size,fp);
                 break;
             case DOUBLE:
                 ltemp = atol(values[i]);
-                cout << "at ins " << ltemp << endl;
+                //scout << "at ins " << ltemp << endl;
                 fwrite(&ltemp,sizeof(long),1,fp);
                 break;
             default :
@@ -189,7 +197,7 @@ void insert_data(char *filename, char **values)
     ++NO_RECORDS;
     write_no_records(fp);
     write_data_end(fp);
-    free(blank);
+    //free(blank);
     close_file(fp);
 }
 
@@ -230,6 +238,15 @@ bool insert_data(int argc, char **argv)
                 }
                 values[i] = Malloc(char,4);
                 strncpy(values[i],stemp.c_str(),4);
+
+                if(PRIMARY_KEY_COL_NO == i) // check if already exist in b+ tree
+                {
+                	if(indexFind(atoi(stemp.c_str()), table_name_to_index(TABLE_NAME)) > 0){
+                		WARN_MESG("PRIMARY CONSTRAINT : This key is already present");
+                		inserted = false;
+                	}
+                }
+
                 break;
 
             case STRING :
@@ -583,7 +600,7 @@ void show_data_from_db(char *filename, map<string,variant<int,string, long> >con
         }
         printf("\n");
     }
-    free(dest);
+    //free(dest);
     fclose(fp);
 }
 
