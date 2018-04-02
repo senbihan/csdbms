@@ -6,9 +6,9 @@ ODIR=./obj
 SRC=./src
 BIN=./bin/
 TST=./test/
-OBJ= $(addprefix $(ODIR)/, user_interface.o integer.o reader.o writer.o operations.o)
+OBJ= $(addprefix $(ODIR)/, user_interface.o integer.o reader.o writer.o operations.o index_operations.o)
 INC = $(addprefix $(IDIR)/, integer.h metadata.h metadata_struct.h operations.h \
-		reader.h user_interface.h writer.h)
+		reader.h user_interface.h writer.h index_operations.h)
 # test
 all : csdbms
 
