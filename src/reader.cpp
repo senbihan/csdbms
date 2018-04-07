@@ -173,7 +173,10 @@ void read_from_file(const char *filename)
         //col[i].print_col();
     }
     IS_READ = 1;
-    OPEN_FILE = Malloc(char,10);
+    if(OPEN_FILE == NULL)
+        OPEN_FILE = Malloc(char,strlen(filename));
+    else
+        OPEN_FILE = (char*)realloc(OPEN_FILE,strlen(filename));
     strncpy(OPEN_FILE,filename,strlen(filename));
     //printf("Reading Complete..... Closing..\n");
     fclose(frptr);

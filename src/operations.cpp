@@ -287,7 +287,7 @@ bool insert_data(int argc, char **argv)
  *          conditions (Hashmap) : if empty equivalent to SELECT *
  * 
  */
-vector<int> select_data(const char* filename, FILE *fp, map<string,variant<int,string,long> >cond)
+vector<int> select_data(char* filename, FILE *fp, map<string,variant<int,string,long> >cond)
 {
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //printf("\nSELECT_DATA : Opening file.... %s\n",filename);
@@ -527,6 +527,7 @@ void delete_data(int argc, char **argv)
  */
 void show_data_from_db(char *filename, map<string,variant<int,string, long> >cond)
 {
+    printf("%s",OPEN_FILE);
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
         read_from_file(filename);
