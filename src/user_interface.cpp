@@ -147,7 +147,6 @@ void start_session()
     char *line;
     char **args;
     int stat = 1;
-    //file = Malloc(char, 10);
     print_welcome();
     do
     {

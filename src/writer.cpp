@@ -244,16 +244,26 @@ char *create_db(int argc, char **args)
         ++k;
 
         // constraint
-        //strncpy(consinfo,args[k],strlen(args[k]));
-        //for(int j = 0 ; consinfo[j] != '\n'; j++)
-        //{
-            if(args[k][0] == 'p'){
+        switch(args[k][0])
+        {
+            case 'p':   // PRIMARY KEY
                 if(PRIMARY_KEY_COL_NO == -1)    PRIMARY_KEY_COL_NO = i;
                 else                            ERR_MESG("Only 1 Primary Key can be assigned");
                 cons = 0;
-            }
-            else     cons = 1;
-        //}   
+                break;
+            case 'n':  // NOT NULL
+                cons = 1;
+                break;
+            case 'a':  // AUTO_INCR
+                cons = 2;
+                break;
+            case 'd':  // DEFAULT
+                cons = 3;
+                break;
+            default :
+                cons = 3;
+                break;
+        }   
         ++k;
 
         // store type

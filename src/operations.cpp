@@ -13,8 +13,7 @@ using namespace std;
 void show_schema(char *filename)
 {
     char *fname = table_to_file_name(filename);
-
-    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+    if(!IS_READ || strcmp(OPEN_FILE,fname) != 0){
         //cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
         read_from_file(fname);
     }
@@ -234,8 +233,14 @@ bool insert_data(int argc, char **argv)
 
             case STRING :
                 if(stemp[0] != '\'') { WARN_MESG("Strings must be quoted.\n"); inserted = false; }
-                while(stemp[0] == '\'' && stemp[stemp.length()-1] != '\'')
+                while(stemp[0] == '\'' && stemp[stemp.length()-1] != '\''){
+                    if(k == argc){   
+                        WARN_MESG("Invalid Syntax. Type 'help' to see all Syntax.");
+                        inserted = false;
+                        break;
+                    }
                     stemp += " " + string(argv[++k]);
+                }
                 stemp = stemp.substr(1,stemp.length()-2);
                 if(!(stemp.length() <= (unsigned int)(col[i].size))){
                     WARN_MESG("Error : NUMBER length is too big\n");
@@ -385,6 +390,12 @@ void delete_data_from_rec(char *filename, FILE *fp, int recNo)
         printf("No Data In this Table\n");
         return ;
     }
+    if(NO_RECORDS == 1){
+        NO_RECORDS = 0;
+        write_no_records(fp);
+        reset_all(fp);
+        return;
+    }
     int prev, next;
     assert(fp != NULL);
     fseek(fp,BLOCK_START(recNo) , SEEK_SET); 
@@ -443,7 +454,6 @@ void delete_data_from_rec(char *filename, FILE *fp, int recNo)
     }
     --NO_RECORDS;
     write_no_records(fp);
-    if(NO_RECORDS == 0) reset_all(fp);      // reset
 }
 
 void delete_data_from_db(char *filename, map<string,variant<int,string,long> >cond)
@@ -527,7 +537,7 @@ void delete_data(int argc, char **argv)
  */
 void show_data_from_db(char *filename, map<string,variant<int,string, long> >cond)
 {
-    printf("%s",OPEN_FILE);
+    //printf("%s",OPEN_FILE);
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
         read_from_file(filename);
