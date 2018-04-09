@@ -9,14 +9,19 @@
 #include "writer.h"
 #include "operations.h"
 #include "index_operations.h"
+#include "datatypes.h"
 using namespace std;
 
 void show_schema(char *filename)
 {
     char *fname = table_to_file_name(filename);
+    #if DEBUG
+        printf("%s\n",fname);
+    #endif
     if(!IS_READ || strcmp(OPEN_FILE,fname) != 0){
         //cout << "\nSHOW_SCHEMA : Opening file.... " << filename << "\n";
-        read_from_file(fname);
+        if(read_from_file(fname) == -1)
+            return ;
     }
     
     printf("\n\nRelation Schema: %14s\n",TABLE_NAME);
@@ -31,6 +36,11 @@ void show_schema(char *filename)
             int int_part    = (sz & 240) >> 4;
             int frac_part   = (sz & 15);
             printf("(%d,%d)",int_part,frac_part);
+        }
+        else if(DATA_TYPES[i] == INTEGER){
+            int sz  = int(col[i].size);
+            sz      >>= 4;
+            printf("(%d)",sz);
         }
         else
             printf("(%d)",int(col[i].size));
@@ -50,21 +60,15 @@ void show_schema(char *filename)
 
 /********************************************* INSERT FUNCTION ***********************************************/
 
-bool is_valid_int(string s)
-{
-    unsigned i = 0;
-    if(s[i] == '-') i++;
-    for( ; i < s.length() ; i++)
-        if(s[i] < '0' || s[i] > '9')
-            return false;
-    return true;
-}
-
 void insert_data(char *filename, char **values)
 {
-    if(!IS_READ || !strcmp(OPEN_FILE,filename)){
-        //cout << "\nINSERT DATA : Opening file.... " << filename << "\n";
-        read_from_file(filename);
+    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+        #if DEBUG
+            printf("%s\n",OPEN_FILE);
+            printf("INSERT DATA : Opening file.... %s\n", filename);
+        #endif
+        if(read_from_file(filename) == -1)
+            return ;
     }
     FILE *fp = fopen(filename, "rb+");
     assert(fp != NULL);
@@ -151,29 +155,36 @@ void insert_data(char *filename, char **values)
 
     // write the data
     int temp;
-    long ltemp;
     for(int i = 0 ; i < NO_COLUMNS ; i++)
     {
         switch(DATA_TYPES[i])
         {
             case INTEGER :      
-                temp = atoi(values[i]);
-                fwrite(&temp,sizeof(int),1,fp);
-                // uodate index call
+                #if DEBUG
+                    printf("Writing : %s\n",values[i]);
+                #endif
+                // convert to 5 byte representation
+
+                fwrite(values[i],(col[i].size >> 4)+1,1,fp);
+                // update index call
                 if(i == PRIMARY_KEY_COL_NO)
                 {
+                    temp = atoi(values[i]);
                 	bool ret = indexInsert(temp,(unsigned long long)record_no_ins,table_name_to_index(TABLE_NAME));
-            		if(ret == false)
-            			WARN_MESG("Index File not updated!");
+            		if(ret == false)    WARN_MESG("Index File not updated!");
                 }
                 break;
             case STRING :
                 fwrite(values[i],sizeof(char),(unsigned int)col[i].size,fp);
                 break;
             case DOUBLE:
-                ltemp = atol(values[i]);
-                //scout << "at ins " << ltemp << endl;
-                fwrite(&ltemp,sizeof(long),1,fp);
+
+                #if DEBUG
+                    printf("Writing : %s and length = %d\n",values[i], strlen(values[i]));
+                #endif
+                // convert to 9 byte representation
+                
+                fwrite(values[i],strlen(values[i]),1,fp);
                 break;
             default :
                 break;
@@ -202,12 +213,16 @@ void insert_data(char *filename, char **values)
 
 bool insert_data(int argc, char **argv)
 {
-    char *filename = Calloc(char,10);
-    strncpy(filename,argv[2],strlen(argv[2]));
-    filename = table_to_file_name(filename);
-    if(!IS_READ || !strcmp(OPEN_FILE,filename)){
-        //cout << "\nINSERT DATA : Opening file.... " << filename << "\n";
-        read_from_file(filename);
+    char *filename = table_to_file_name(argv[2]);
+    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+        #if DEBUG
+            printf("%s\n",OPEN_FILE);
+            //printf("%d %d %d",strlen(OPEN_FILE),strlen(filename),strcmp(OPEN_FILE,filename));
+            printf("INSERT DATA : Opening file.... %s\n", filename);
+        #endif
+    
+        if(read_from_file(filename) == -1)
+            return false;
     }
     if(strcmp(argv[3],"values") != 0)
     {
@@ -218,7 +233,7 @@ bool insert_data(int argc, char **argv)
     string stemp;
     int i, k = 4;
     bool inserted = true;
-    int sz, int_part_size, frac_part_size;
+    unsigned int sz, int_part_size, frac_part_size, size;
     bool seen_dot = false; 
     string d_str;
     for(i = 0 ; i < NO_COLUMNS ; i++,k++)
@@ -227,24 +242,29 @@ bool insert_data(int argc, char **argv)
         switch(DATA_TYPES[i])
         {         
             case INTEGER :
-                if(!is_valid_int(stemp)){
+                if(!is_valid_int(argv[k])){
                     WARN_MESG("Error : Type mismatch \n");
                     inserted = false;
                 }
-                if(!(stemp.length() <= (unsigned int)(col[i].size))){
+                size = (unsigned int)(col[i].size >> 4) + 1;
+                if(!(strlen(argv[k]) <= size)){
                     WARN_MESG("Error : NUMBER length is too big\n");
                     inserted = false;
                 }
-                values[i] = Malloc(char,4);
-                strncpy(values[i],stemp.c_str(),4);
-
-                if(PRIMARY_KEY_COL_NO == i) // check if already exist in b+ tree
+                values[i] = Malloc(char,size);
+                strncpy(values[i],argv[k],size);
+                
+                if(inserted && PRIMARY_KEY_COL_NO == i) // check if already exist in b+ tree
                 {
-                	if(indexFind(atoi(stemp.c_str()), table_name_to_index(TABLE_NAME)) > 0){
+                	if(indexFind(atoi(values[i]), table_name_to_index(TABLE_NAME)) > 0){
                 		WARN_MESG("PRIMARY CONSTRAINT : This key is already present");
                 		inserted = false;
                 	}
                 }
+                #if DEBUG
+                    printf("%s %u %u\n",values[i],sizeof(values[i]),strlen(values[i]));
+                    printf("%d\n",(col[i].size >> 4));
+                #endif
 
                 break;
 
@@ -270,6 +290,12 @@ bool insert_data(int argc, char **argv)
                 sz                  = int(col[i].size);
                 int_part_size       = (sz & 240) >> 4;
                 frac_part_size      = (sz & 15);
+
+                #if DEBUG
+                    printf("size of real: %d\n",int_part_size + frac_part_size);
+                #endif
+                values[i] = Malloc(char,int_part_size + frac_part_size);
+                
                 for(unsigned j = 0 ; j < stemp.length() ; j++){
                     if(stemp[j] == '.') {seen_dot = true; continue;}
                     if(!seen_dot)   int_part_size--;
@@ -285,8 +311,11 @@ bool insert_data(int argc, char **argv)
                     stemp += "0";
                     frac_part_size--;
                 }
-                values[i] = Malloc(char,sizeof(stemp));
-                strncpy(values[i],stemp.c_str(),sizeof(stemp));
+                strcpy(values[i],stemp.c_str());
+                #if DEBUG
+                    printf("copying %s to values : %s %d\n", stemp.c_str(),values[i], strlen(values[i]));
+                #endif
+                
                 seen_dot = false;
                 break;
             default:
@@ -294,7 +323,6 @@ bool insert_data(int argc, char **argv)
         }
     }
     if(inserted) insert_data(filename,values);
-    //for(int j = 0 ; j < NO_COLUMNS ; i++)   free(values[j]);
     return inserted;
 }
 
@@ -311,16 +339,22 @@ bool insert_data(int argc, char **argv)
  */
 vector<int> select_data(char* filename, FILE *fp, map<string,variant<int,string,long> >cond)
 {
+    #if DEBUG
+        printf("%s\n",OPEN_FILE);
+    #endif
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
-        //printf("\nSELECT_DATA : Opening file.... %s\n",filename);
+        #if DEBUG
+            printf("\nSELECT_DATA : Opening file.... %s\n",filename);
+        #endif
+
         read_from_file(filename);
         fp = fopen(filename, "rb+");
     }
     assert(fp != NULL);
     vector<int>record_numbers;
 
-    int int_data;
-    long real_data;
+    int int_data; //i_part, f_part;
+    //long real_data;
     char *dest = Malloc(char,255);
     int prev, next;
     int blockNo = FIRST_REC_NO;
@@ -336,7 +370,8 @@ vector<int> select_data(char* filename, FILE *fp, map<string,variant<int,string,
             string s(col[j].col_name);
             if(DATA_TYPES[j] == INTEGER)
             {          
-                fread(&int_data,sizeof(int),1,fp);
+                fread(dest,int(col[j].size >> 4) + 1,1,fp);
+                int_data = atoi(dest);
                 if(cond.find(s) != cond.end())
                 {
                     int ival = get<int>(cond[s]);
@@ -354,16 +389,20 @@ vector<int> select_data(char* filename, FILE *fp, map<string,variant<int,string,
                     else    flag &= 0;
                 }
             }
-            else if (DATA_TYPES[j] == DOUBLE)
+            
+            /*else if (DATA_TYPES[j] == DOUBLE)
             {
-                fread(&real_data,sizeof(long),1,fp);
+                i_part = (int(col[j].size) & 240) >> 4;
+                f_part = int(col[j].size) & 15;
+                fread(dest,i_part + f_part,1,fp);
+                real_data = atol(dest);
                 if(cond.find(s) != cond.end())
                 {
                     long lval = get<long>(cond[s]);
                     if( lval == real_data)  flag &= 1;
                     else    flag &= 0;
                 }
-            }
+            }*/
         }
         if(flag)    record_numbers.push_back(blockNo);
 
@@ -400,7 +439,8 @@ void delete_data_from_rec(char *filename, FILE *fp, int recNo)
 {
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //printf("\nDELETE_DATA : Opening file.... %s\n",filename);
-        read_from_file(filename);
+        if(read_from_file(filename) == -1)
+            return ;
         fp = fopen(filename, "rb+");
     }
     if(NO_RECORDS == 0) {
@@ -494,7 +534,8 @@ void delete_data(int argc, char **argv)
     filename = table_to_file_name(filename);
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
-        read_from_file(filename);
+        if(read_from_file(filename) == -1)
+            return ;
     }
     map<string,variant<int,string,long> > cond;
     
@@ -554,10 +595,15 @@ void delete_data(int argc, char **argv)
  */
 void show_data_from_db(char *filename, map<string,variant<int,string, long> >cond)
 {
-    //printf("%s",OPEN_FILE);
+    #if DEBUG
+        printf("%s\n",OPEN_FILE);
+    #endif
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
-        //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
-        read_from_file(filename);
+        #if DEBUG
+            printf("\nSHOW_DATA : Opening file.... %s\n",filename);
+        #endif
+        if(read_from_file(filename) == -1)
+            return ;
     }
     if(NO_RECORDS == 0) {
         printf("No Data In this Table\n");
@@ -565,8 +611,7 @@ void show_data_from_db(char *filename, map<string,variant<int,string, long> >con
     }
     FILE *fp = fopen(filename, "rb+");
     assert(fp != NULL);
-    int int_data, f_part;
-    long real_data;
+    int i_part, f_part;
     double r_data;
     char *dest = Malloc(char,255);
     vector<int>rec_no = select_data(filename,fp,cond);
@@ -592,17 +637,18 @@ void show_data_from_db(char *filename, map<string,variant<int,string, long> >con
             switch(DATA_TYPES[j])
             {          
                 case INTEGER:
-                    fread(&int_data,sizeof(int),1,fp);
-                    printf("%-20d",int_data);
+                    fread(dest,int(col[j].size >> 4) + 1,1,fp);
+                    printf("%-20s",dest);
                     break;
                 case STRING :
                     fread(dest,sizeof(char),(int)col[j].size,fp);
                     printf("%-20s",dest);
                     break;
                 case DOUBLE:
-                    fread(&real_data,sizeof(long),1,fp);
+                    i_part = (int(col[j].size) & 240) >> 4;
                     f_part = int(col[j].size) & 15;
-                    r_data = real_data / ((double)pow(10,f_part));
+                    fread(dest,i_part + f_part,1,fp);
+                    r_data = atol(dest) / ((double)pow(10,f_part));
                     printf("%-20.*f",f_part,r_data);
                     break;
                 default:
@@ -622,7 +668,8 @@ void show_data(int argc, char **argv)
     filename = table_to_file_name(filename);
     if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
         //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
-        read_from_file(filename);
+        if(read_from_file(filename) == -1)
+            return ;
     }
     map<string,variant<int,string,long> > cond;
     
@@ -641,27 +688,38 @@ void show_data(int argc, char **argv)
                 return;
             }
             
-            if((argc - 5) % 2 == 1){
-                WARN_MESG("Invalid Syntax, see help for syntax structure\n");
-                return;
-            }
-            
-            for(int i = 5 ; i < argc; i+=2)
+            for(int i = 5 ; i < argc; i++)
             {
                 string s(argv[i]);
                 if(COL_NT.find(s) == COL_NT.end()){
-                    FAIL_MESG("NO column of this name\n");
+                    cout << s << "\n";
+                    FAIL_MESG("No column of this name\n");
                     return ;
                 }
                 if(COL_NT[s] == INTEGER){
-                    int int_data = atoi(argv[i+1]);
+                    int int_data = atoi(argv[++i]);
                     cond.insert(make_pair(s,int_data));
                 }
-                else if(COL_NT[s] == STRING){
-                    string dest(argv[i+1]);
-                    cond.insert(make_pair(s,dest));
+                else if(COL_NT[s] == STRING)
+                {
+                    string stemp(argv[++i]);
+                    #if DEBUG
+                        cout << "key =  " << s <<  " value = " << stemp <<  "\n";
+                    #endif
+                    if(stemp[0] != '\'') { WARN_MESG("Strings must be quoted.\n");}
+                    while(stemp[0] == '\'' && stemp[stemp.length()-1] != '\''){
+                        stemp += " " + string(argv[++i]);
+                    }
+                    stemp = stemp.substr(1,stemp.length()-2);
+                    #if DEBUG
+                        cout << "key =  " << s <<  " value = " << stemp <<  "\n";
+                    #endif
+                    
+                    cond.insert(make_pair(s,stemp));
+                    
                 }
-                /*else if(COL_NT[s] == DOUBLE){
+                /* double cannot be compared
+                else if(COL_NT[s] == DOUBLE){
                     string stemp(argv[i+1]);
                     if(stemp.find('.') != string::npos) stemp.erase(stemp.find('.'),1);
                     long l_data = atol(argv[i+1]);

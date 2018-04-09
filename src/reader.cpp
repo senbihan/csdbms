@@ -11,11 +11,15 @@ using namespace std;
 FILE *frptr;
 
 
-void open_file(const char *filename)
+int open_file(const char *filename)
 {
     //if(frptr != NULL)   fclose(frptr);
     frptr = fopen(filename,"rb");
-    if(frptr == NULL)   ERR_MESG("reader : File cannot be opened or doesnot exist!\n");
+    if(frptr == NULL){   
+        WARN_MESG("Table not present\n");
+        return -1;
+    }
+    return 0;
 }
 
 //check if the file is actually in the correct format
@@ -75,18 +79,9 @@ void read_data_end()
     fread(&DATA_END,DATA_END_SIZE,1,frptr);
 }
 
-int get_type_int(char type)
-{
-    return ((112 & type) >> 5) + 1;
-}
-
-int get_const_int(char type)
-{
-    return ((28 & type) >> 2);
-}
-
 void read_columns()
 {
+    fseek(frptr,COL_DESC_POS,SEEK_SET);
     fread(col, sizeof(struct Column), NO_COLUMNS , frptr); 
 }
 
@@ -123,37 +118,54 @@ struct datetime *get_date_time()
     return dt;
 }
 
+/*****
+ * 
+ * Auxiliary function for getting type and constraint
+ **/
+
+int get_type_int(char type)
+{
+    return ((112 & type) >> 5) + 1;
+}
+
+int get_const_int(char type)
+{
+    return ((28 & type) >> 2);
+}
 
 
-void read_from_file(const char *filename)
+int read_from_file(const char *filename)
 {
     //printf("Enter filename to be read: \n");
     //scanf("%s",file_name);
-    open_file(filename);
+    if(open_file(filename) == -1)   return -1;
 
     if(!check_validity(frptr))
         ERR_MESG("reader : file format is not valid!");
 
     read_timestamp(frptr);
     read_record_no();
-    //printf("File Details: \n\n");
-    //printf("Records : %d\n",NO_RECORDS);
     read_column_no();
-    //printf("Columns : %d\n",NO_COLUMNS);
     read_table_name();
-    //printf("Table Name : %s\n",TABLE_NAME);
     read_record_size();
-    //printf("Each Record Size: %d\n",RECORD_SIZE);
     read_data_head();
-    //printf("Data Head : %d\n",DATA_HEAD);
     read_data_end();
-    //printf("Data End : %d\n",DATA_END);
     read_first_rec_no();
-    //printf("first record no: %d\n",FIRST_REC_NO);
     read_last_rec_no();
-    //printf("Last record no: %d\n",LAST_REC_NO);
     read_total_rec();
+    
 
+    #if DEBUG
+        printf("File Details: \n\n");
+        printf("Records : %d\n",NO_RECORDS);
+        printf("Columns : %d\n",NO_COLUMNS);
+        printf("Table Name : %s\n",TABLE_NAME);
+        printf("Each Record Size: %d\n",RECORD_SIZE);
+        printf("Data Head : %d\n",DATA_HEAD);
+        printf("Data End : %d\n",DATA_END);
+        printf("first record no: %d\n",FIRST_REC_NO);
+        printf("Last record no: %d\n",LAST_REC_NO);
+    #endif
 
     col = Malloc(struct Column, NO_COLUMNS);
     assert(col != NULL);
@@ -165,19 +177,27 @@ void read_from_file(const char *filename)
 
     for(int i = 0 ; i < NO_COLUMNS ; i++){
         DATA_TYPES[i] = get_type_int(col[i].data_type);
-        //printf("%s \t %d\n",col[i].col_name,DATA_TYPES[i]);
+        #if DEBUG
+            printf("%s \t %d\n",col[i].col_name,DATA_TYPES[i]);
+        #endif
         string s(col[i].col_name);
         COL_NT[s] = DATA_TYPES[i];
         if(get_const_int(col[i].data_type) == 0)    // 0 : primary key
             PRIMARY_KEY_COL_NO = i;
-        //col[i].print_col();
     }
     IS_READ = 1;
-    if(OPEN_FILE == NULL)
+    if(OPEN_FILE == NULL)   OPEN_FILE = Malloc(char,strlen(filename));
+    else{                    
+        free(OPEN_FILE);
         OPEN_FILE = Malloc(char,strlen(filename));
-    else
-        OPEN_FILE = (char*)realloc(OPEN_FILE,strlen(filename));
+    }
     strncpy(OPEN_FILE,filename,strlen(filename));
-    //printf("Reading Complete..... Closing..\n");
     fclose(frptr);
+    
+    
+    #if DEBUG
+        printf("Reading Complete..... Closing..\n");
+    #endif
+
+    return 0;
 }

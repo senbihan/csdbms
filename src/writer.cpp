@@ -17,8 +17,8 @@ int *data_types;
 char* table_to_file_name(char *tab_name)
 {
     char ext[4] = ".cs";
-    char *filename = Malloc(char,10);
-    strncpy(filename,tab_name,strlen(tab_name));
+    char *filename = Malloc(char,sizeof(tab_name));
+    strcpy(filename,tab_name);
     return strcat(filename,ext);
 }   
 
@@ -74,10 +74,7 @@ void write_table_name()
 
 void write_data_head()
 {
-    DATA_HEAD = ftell(fptr) + DATA_HEAD_SIZE + DATA_END_SIZE ;
-    DATA_HEAD += FIRST_REC_NO_SIZE + LAST_REC_NO_SIZE + TOTAL_REC_SIZE;
-    DATA_HEAD += NO_COLUMNS * sizeof(struct Column);
-    DATA_HEAD += BUFFER_SIZE;
+    DATA_HEAD = TOTAL_STATIC_SIZE + TOTAL_DYN_SIZE;
     fwrite(&DATA_HEAD, DATA_HEAD_SIZE, 1, fptr);
 }
 
@@ -138,6 +135,7 @@ void write_to_file()
     write_first_rec_no(fptr);
     write_last_rec_no(fptr);
     write_total_rec(fptr);
+    fseek(fptr,COL_DESC_POS,SEEK_SET);
     write_columns();
 }
 
@@ -170,13 +168,16 @@ char *create_db(int argc, char **args)
     char *filename = table_to_file_name(TABLE_NAME);
     
     create_db_file(filename);
-
-    fptr = fopen(filename,"wb");
     NO_COLUMNS = (argc - 3) / 4;
+    if(NO_COLUMNS > MAX_COLUMNS){
+        WARN_MESG("No of Columns cannot exceed 16");
+        return NULL;
+    }
+    fptr = fopen(filename,"wb");
     NO_RECORDS = 0; // initially 0
-    col = Malloc(struct Column, NO_COLUMNS);
-    data_types = Malloc(int, NO_COLUMNS);
-    CUM_POS = Malloc(int,NO_COLUMNS);
+    col = Malloc(struct Column, MAX_COLUMNS);
+    data_types = Malloc(int, MAX_COLUMNS);
+    //CUM_POS = Malloc(int,MAX_COLUMNS);
     
     assert(col != NULL && data_types != NULL);
     char sz;
@@ -218,7 +219,8 @@ char *create_db(int argc, char **args)
         {
             case INTEGER:   
                 sz = char(atoi(sizeinfo));
-                assert(sz <= INT_MAX_DIGIT); 
+                assert(sz <= INT_MAX_DIGIT);
+                sz <<= 4; // push it to first 4 bit 
                 break;
             case STRING :   
                 sz = char(atoi(sizeinfo));
@@ -228,14 +230,14 @@ char *create_db(int argc, char **args)
                 j = 0; temp_string = "";
                 while(sizeinfo[j] != ',')   temp_string += sizeinfo[j++];
                 i_part = atoi(temp_string.c_str());
-                assert(i_part <= 10);
+                assert(i_part <= INT_MAX_DIGIT);
                 sz = char(i_part);
                 ++j;
                 sz <<= 4;
                 temp_string = "";
                 while(sizeinfo[j] != '\0')  temp_string += sizeinfo[j++];
                 f_part = atoi(temp_string.c_str());
-                assert(f_part <= 4);    // upto 4 decimal places
+                assert(f_part <= FRAC_MAX_DIG);    
                 sz |= char(f_part);
                 break;
             default :  break;
@@ -248,7 +250,7 @@ char *create_db(int argc, char **args)
         {
             case 'p':   // PRIMARY KEY
                 if(PRIMARY_KEY_COL_NO == -1)    PRIMARY_KEY_COL_NO = i;
-                else                            ERR_MESG("Only 1 Primary Key can be assigned");
+                else                            FAIL_MESG("Only 1 Primary Key can be assigned");
                 cons = 0;
                 break;
             case 'n':  // NOT NULL
@@ -270,7 +272,7 @@ char *create_db(int argc, char **args)
         col[i].data_type = get_type(type, cons);
         // length calculation
         RECORD_SIZE += type == STRING ? sz * TYPE_SIZE[type] : TYPE_SIZE[type];
-        CUM_POS[i] = i == 0 ? 0 : CUM_POS[i-1] + (type == STRING ? sz * TYPE_SIZE[type] : TYPE_SIZE[type]);
+        //CUM_POS[i] = i == 0 ? 0 : CUM_POS[i-1] + (type == STRING ? sz * TYPE_SIZE[type] : TYPE_SIZE[type]);
     
     }
 

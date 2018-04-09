@@ -7,26 +7,26 @@
 #include <string.h>
 #include <unordered_map>
 
-extern int              NO_RECORDS;
-extern int              NO_COLUMNS;
-extern char*            TABLE_NAME;
-extern int              RECORD_SIZE;
-extern int              DATA_HEAD;
-extern int              DATA_END;
-extern struct Column*   col;
-extern std::string      types[6] ;//= {"INTEGER", "DOUBLE", "STRING", "DATE", "TIME"};
-extern int              TYPE_SIZE[6];
-extern int              PRIMARY_KEY_COL_NO;
-extern int*             CUM_POS;
-extern int              FIRST_REC_NO;
-extern int              LAST_REC_NO;
-extern int              IS_READ;
-extern int              TOTAL_RECORD;
-extern char*            OPEN_FILE;
-extern long             LAST_MOD_TIME;
+extern int32_t             NO_RECORDS;         /* No of Records logically present */
+extern int32_t             NO_COLUMNS;         /* No of columns */
+extern char*               TABLE_NAME;
+extern int32_t             RECORD_SIZE;
+extern int32_t             DATA_HEAD;
+extern int32_t             DATA_END;
+extern struct Column       *col;
+extern int                 *DATA_TYPES;
+extern std::string         types[6];
+extern uint                TYPE_SIZE[6];
+extern int32_t             PRIMARY_KEY_COL_NO;
+extern int32_t             *CUM_POS;
+extern int32_t             FIRST_REC_NO;
+extern int32_t             LAST_REC_NO;
+extern int32_t             TOTAL_RECORD;
+extern int                 IS_READ;
+extern char*               OPEN_FILE;
+extern int64_t             LAST_MOD_TIME;
 
 extern std::map<std::string,int>   COL_NT;
-extern std::unordered_map<std::variant<int,char*>,int> hash_table;
 
 void show_schema(char *);
 void build_hash_table(const char *);

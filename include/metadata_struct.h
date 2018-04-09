@@ -17,6 +17,8 @@
 #include <cstdio>
 #include <cstring>
 
+#define DEBUG                   0
+
 /*Helper Macros*/
 
 #define Malloc(T,size)          (T*)malloc(size*sizeof(T))
@@ -31,10 +33,11 @@
 #define INT_MAX_DIGIT           9
 #define INT_BYTE_SIZE           5                
 #define MAX_INTEGER             999999999
-#define MAX_RECORDS             2048
-#define MAX_COLUMNS             255
+#define FRAC_MAX_DIG            8
+#define MAX_RECORDS             ((1<<32)-1)
+#define MAX_COLUMNS             32
 #define STR_MAX_SIZE            255
-#define BLOCK_SIZE              (1 << 8)
+#define BLOCK_SIZE              (1 << 13)
 #define PTR_SIZE                4
 
 /* Dataypes maps */
@@ -61,13 +64,12 @@
 #define LAST_REC_NO_SIZE        4 
 #define FIRST_REC_NO_SIZE       4 
 #define TOTAL_REC_SIZE          4
-#define BUFFER_SIZE             0
+#define TOTAL_STATIC_SIZE       72
 /* Variable Portion */
 
 #define COLUMN_DETAILS_SIZE     32
 #define COLUMN_NAME_SIZE        16
 #define DATA_TYPE_SIZE          1   
-
 // first 3-bits : data type, next 3-bits: Constraint info
 /**
  *  Datatypes: 
@@ -94,6 +96,8 @@
 #define AUTO_INC_SIZE           5
 #define MISC_SIZE               8
 
+#define TOTAL_DYN_SIZE          (32 * MAX_COLUMNS)
+
 // derived
 #define DATE_TIME_POSITION      FILE_HEADER_SIZE
 #define NO_REC_POSITION         DATE_TIME_POSITION + DATE_TIME_SIZE
@@ -105,20 +109,24 @@
 #define FIRST_REC_NO_POS        DATA_END_POSITION + DATA_END_SIZE
 #define LAST_REC_NO_POS         FIRST_REC_NO_POS + FIRST_REC_NO_SIZE
 #define TOTAL_REC_POS           LAST_REC_NO_POS + TOTAL_REC_SIZE
-#define COL_DESC_POS            TOTAL_REC_POS + LAST_REC_NO_SIZE 
+
+#define COL_DESC_POS            TOTAL_STATIC_SIZE 
 
 #define D_END                   DATA_HEAD + (TOTAL_RECORD * BLOCK_SIZE)
 #define BLOCK_START(i)          DATA_HEAD + (i - 1) * BLOCK_SIZE
 
+
+typedef unsigned char           byte;
+
 struct Column
 {
-    char    col_name[COLUMN_NAME_SIZE];
-    char    data_type; // type and constraint
-    char    index;
-    char    size;
-    int     auto_incr;
+    char    col_name[COLUMN_NAME_SIZE]; // columnname
+    byte    data_type;                  // type and constraint
+    byte    index;                      // present
+    byte    size;                       // length of data
+    char    auto_incr[INT_BYTE_SIZE];   // 5 byte integer
+    byte    buff[8];                    // extra space
 };
 
-#define MAX_VALUE_INT(size)     int(pow(10,size+1)) - 1 
 
 #endif // STRUCT_INFO_H

@@ -34,7 +34,7 @@ char* table_name_to_index(char *tablename){
 	int size = strlen(tablename) + 7;
 	char* index_file_name = (char*)malloc(size * sizeof(char));
 
-	strncpy(index_file_name,tablename,sizeof(tablename));
+	strncpy(index_file_name,tablename,strlen(tablename));
 	index_file_name = strcat(index_file_name, "_index");
 
 	return index_file_name;

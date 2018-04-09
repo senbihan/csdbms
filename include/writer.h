@@ -10,22 +10,25 @@
 #include <map>
 #include <string.h>
 
-extern int              NO_RECORDS;
-extern int              NO_COLUMNS;
-extern char*            TABLE_NAME;
-extern int              RECORD_SIZE;
-extern int              DATA_HEAD;
-extern int              DATA_END;
-extern struct Column*   col;
-extern int*             DATA_TYPES;
-extern int              TYPE_SIZE[6]  ; //= {0, sizeof(int), sizeof(double), sizeof(char), 0 , 0};
-extern int              PRIMARY_KEY_COL_NO;
-extern int              *CUM_POS;
-extern int              FIRST_REC_NO;
-extern int              LAST_REC_NO;
-extern int              TOTAL_RECORD;
-extern long             LAST_MOD_TIME;
-extern std::map<std::string,int> COL_NT;
+extern int32_t             NO_RECORDS;         /* No of Records logically present */
+extern int32_t             NO_COLUMNS;         /* No of columns */
+extern char*               TABLE_NAME;
+extern int32_t             RECORD_SIZE;
+extern int32_t             DATA_HEAD;
+extern int32_t             DATA_END;
+extern struct Column       *col;
+extern int                 *DATA_TYPES;
+extern std::string         types[6];
+extern uint                TYPE_SIZE[6];
+extern int32_t             PRIMARY_KEY_COL_NO;
+extern int32_t             *CUM_POS;
+extern int32_t             FIRST_REC_NO;
+extern int32_t             LAST_REC_NO;
+extern int32_t             TOTAL_RECORD;
+extern int                 IS_READ;
+extern char*               OPEN_FILE;
+extern int64_t             LAST_MOD_TIME;
+
 
 char *table_to_file_name(char *);
 void write_timestamp(FILE *);

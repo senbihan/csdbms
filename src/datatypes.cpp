@@ -1,46 +1,25 @@
-/**
- * Integer Equivalent datatype which takes 5 bytes
- * Maximum integer can be stored 999999999
- * 
- * 
- * Author(s) : Bihan Sen (senbihan@gmail.com)
- * 
- * 
- **/
-
-#include "integer.h"
 #include <cstdlib>
-#include <cstdio>
-using namespace std;
+#include <string.h>
+#include "datatypes.h"
+#include "metadata_struct.h"
+
 
 char dig_to_byte(char dig)
 {
     return dig - '0';
 }
 
-__c_int :: __c_int()
+bool is_valid_int(char *s)
 {
-    num = Calloc(char,INT_MAX_DIGIT);
-    byte_arr = Calloc(char, INT_BYTE_SIZE);
+    unsigned i = 0, size = strlen(s);
+    if(s[i] == '-') i++;
+    for( ; i < size ; i++)
+        if(s[i] < '0' || s[i] > '9')
+            return false;
+    return true;
 }
 
-__c_int :: __c_int(char *number)
-{
-    num = Calloc(char,INT_MAX_DIGIT);
-    strcpy(num,number);
-    byte_arr = get_equivalent_number(num);
-}
-
-/**
- * Converts a number (max 10-digits) taken
- * as a string
- * to 5-byte representation
- * 
- * 
- * @params : number (char *)
- **/
-
-char* __c_int :: get_equivalent_number(char *number)
+char *int_to_byte(char *number)
 {
     char *temp_num = Calloc(char, INT_BYTE_SIZE);
     char f_byte = 0, cur_byte = 0, last_byte = 0; 
@@ -73,11 +52,4 @@ char* __c_int :: get_equivalent_number(char *number)
     }
     temp_num[0] = f_byte;
     return temp_num;
-}
-
-void __c_int :: print()
-{
-    for(int i = 0 ; i < INT_BYTE_SIZE; i++)
-        printf("%*u ",2,byte_arr[i]);
-    printf("\n");
 }
