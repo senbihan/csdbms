@@ -166,13 +166,18 @@ char *create_db(int argc, char **args)
     strcpy(TABLE_NAME,args[2]);
 
     char *filename = table_to_file_name(TABLE_NAME);
-    
+    FILE *fps = fopen(filename,"r");
+    if(fps != NULL){
+        WARN_MESG("Table Already present\n");
+        return NULL;
+    } 
     create_db_file(filename);
     NO_COLUMNS = (argc - 3) / 4;
     if(NO_COLUMNS > MAX_COLUMNS){
         WARN_MESG("No of Columns cannot exceed 16");
         return NULL;
     }
+    
     fptr = fopen(filename,"wb");
     NO_RECORDS = 0; // initially 0
     col = Malloc(struct Column, MAX_COLUMNS);

@@ -164,7 +164,7 @@ void insert_data(char *filename, char **values)
                     printf("Writing : %s\n",values[i]);
                 #endif
                 // convert to 5 byte representation
-
+                
                 fwrite(values[i],(col[i].size >> 4)+1,1,fp);
                 // update index call
                 if(i == PRIMARY_KEY_COL_NO)
@@ -552,31 +552,37 @@ void delete_data(int argc, char **argv)
             return;
         }
             
-        if((argc - 4) % 2 == 1){
-            WARN_MESG("Invalid Syntax, see help for syntax structure\n");
-            return;
-        }
-            
-        for(int i = 4 ; i < argc; i+=2)
+        for(int i = 4 ; i < argc; i++)
         {
             string s(argv[i]);
             if(COL_NT.find(s) == COL_NT.end()){
-                FAIL_MESG("NO column of this name\n");
+                FAIL_MESG("No column of the name");
                 return ;
             }
             if(COL_NT[s] == INTEGER){
-                int int_data = atoi(argv[i+1]);
+                int int_data = atoi(argv[++i]);
                 cond.insert(make_pair(s,int_data));
             }
-            else if(COL_NT[s] == STRING){
-                string dest(argv[i+1]);
-                cond.insert(make_pair(s,dest));
-            } 
-            /*else if(COL_NT[s] == DOUBLE){
-                long l_data = atol(argv[i+1]);
-                cond.insert(make_pair(s,l_data));   
-            }*/ 
-        }
+            else if(COL_NT[s] == STRING)
+            {
+                string stemp(argv[++i]);
+                #if DEBUG
+                    cout << "key =  " << s <<  " value = " << stemp <<  "\n";
+                #endif
+                if(stemp[0] != '\'') { WARN_MESG("Strings must be quoted.\n");}
+                while(stemp[0] == '\'' && stemp[stemp.length()-1] != '\''){
+                    stemp += " " + string(argv[++i]);
+                }
+                stemp = stemp.substr(1,stemp.length()-2);
+                #if DEBUG
+                    cout << "key =  " << s <<  " value = " << stemp <<  "\n";
+                #endif
+                
+                 cond.insert(make_pair(s,stemp));
+                
+            }
+                // double cannot be compared
+        }    
         delete_data_from_db(filename,cond);
         cond.clear();
     }
@@ -718,13 +724,7 @@ void show_data(int argc, char **argv)
                     cond.insert(make_pair(s,stemp));
                     
                 }
-                /* double cannot be compared
-                else if(COL_NT[s] == DOUBLE){
-                    string stemp(argv[i+1]);
-                    if(stemp.find('.') != string::npos) stemp.erase(stemp.find('.'),1);
-                    long l_data = atol(argv[i+1]);
-                    cond.insert(make_pair(s,l_data));   
-                }*/ 
+                // double cannot be compared
             }
             show_data_from_db(filename,cond);
             cond.clear();
