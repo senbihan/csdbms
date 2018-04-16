@@ -363,7 +363,7 @@ vector<int> select_data(char* filename, FILE *fp, map<string,variant<int,string,
     #if DEBUG
         printf("%s\n",OPEN_FILE);
     #endif
-    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+    if(!(IS_READ && strcmp(OPEN_FILE,filename) == 0)){
         #if DEBUG
             printf("\nSELECT_DATA : Opening file.... %s\n",filename);
         #endif
@@ -458,7 +458,7 @@ inline void reset_all(FILE *fp)
 
 void delete_data_from_rec(char *filename, FILE *fp, int recNo)
 {
-    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+    if(!(IS_READ && strcmp(OPEN_FILE,filename) == 0)){
         //printf("\nDELETE_DATA : Opening file.... %s\n",filename);
         if(read_from_file(filename) == -1)
             return ;
@@ -550,10 +550,8 @@ void delete_data_from_db(char *filename, map<string,variant<int,string,long> >co
 
 void delete_data(int argc, char **argv)
 {
-    char *filename = Calloc(char,10);
-    strncpy(filename,argv[2],strlen(argv[2]));
-    filename = table_to_file_name(filename);
-    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+    char *filename = table_to_file_name(argv[2]);
+    if(!(IS_READ && strcmp(OPEN_FILE,filename) == 0)){
         //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
         if(read_from_file(filename) == -1)
             return ;
@@ -625,7 +623,7 @@ void show_data_from_db(char *filename, map<string,variant<int,string, long> >con
     #if DEBUG
         printf("%s\n",OPEN_FILE);
     #endif
-    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+    if(!(IS_READ && strcmp(OPEN_FILE,filename) == 0)){
         #if DEBUG
             printf("\nSHOW_DATA : Opening file.... %s\n",filename);
         #endif
@@ -690,10 +688,8 @@ void show_data_from_db(char *filename, map<string,variant<int,string, long> >con
 
 void show_data(int argc, char **argv)
 {
-    char *filename = Calloc(char,10);
-    strncpy(filename,argv[3],strlen(argv[3]));
-    filename = table_to_file_name(filename);
-    if(!IS_READ || strcmp(OPEN_FILE,filename) != 0){
+    char *filename = table_to_file_name(argv[3]);
+    if(!(IS_READ && strcmp(OPEN_FILE,filename) == 0)){
         //printf("\nSHOW_DATA : Opening file.... %s\n",filename);
         if(read_from_file(filename) == -1)
             return ;

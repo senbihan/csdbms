@@ -17,7 +17,7 @@ int *data_types;
 char* table_to_file_name(char *tab_name)
 {
     char ext[4] = ".cs";
-    char *filename = Malloc(char,sizeof(tab_name));
+    char *filename = Malloc(char,sizeof(tab_name)+4);
     strcpy(filename,tab_name);
     return strcat(filename,ext);
 }   

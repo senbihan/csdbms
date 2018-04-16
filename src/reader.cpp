@@ -26,7 +26,7 @@ int open_file(const char *filename)
 int check_validity(FILE *fp)
 {
     assert(fp != NULL);
-    char *dest = Calloc(char,FILE_HEADER_SIZE);
+    char *dest = Calloc(char,FILE_HEADER_SIZE+1);
     fread(dest,sizeof(char),FILE_HEADER_SIZE,fp);
     int ret = strcmp("CS",dest);
     //free(dest);
@@ -191,10 +191,11 @@ int read_from_file(const char *filename)
             PRIMARY_KEY_COL_NO = i;
     }
     IS_READ = 1;
-    if(OPEN_FILE == NULL)   OPEN_FILE = Malloc(char,strlen(filename));
+    if(OPEN_FILE == NULL)  
+        OPEN_FILE = Malloc(char,strlen(filename)+1);
     else{                    
         free(OPEN_FILE);
-        OPEN_FILE = Malloc(char,strlen(filename));
+        OPEN_FILE = Malloc(char,strlen(filename)+1);
     }
     strncpy(OPEN_FILE,filename,strlen(filename));
     fclose(frptr);
