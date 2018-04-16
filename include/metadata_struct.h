@@ -19,6 +19,7 @@
 
 #define DEBUG                   0
 #define READ_DEBUG              0
+#define WRITE_DEBUG             0
 /*Helper Macros*/
 
 #define Malloc(T,size)          (T*)malloc(size*sizeof(T))

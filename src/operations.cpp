@@ -115,6 +115,9 @@ void insert_data(char *filename, char **values)
         // update will be at this position
         fseek(fp,BLOCK_START(LAST_REC_NO),SEEK_SET);
         // write previous and next
+        #if WRITE_DEBUG
+            printf("first Row At : %d\n",ftell(fp));
+        #endif
         fwrite(&prev,PTR_SIZE,1,fp);
         fwrite(&next,PTR_SIZE,1,fp);
 
@@ -153,6 +156,9 @@ void insert_data(char *filename, char **values)
             // write at last->next = this
             fseek(fp,BLOCK_START(LAST_REC_NO) + PTR_SIZE ,SEEK_SET);
             last_next = TOTAL_RECORD;
+            #if WRITE_DEBUG
+                printf("updating last next at: %d\n",ftell(fp));
+            #endif
             fwrite(&last_next,PTR_SIZE,1,fp);
             
             fseek(fp,BLOCK_START(TOTAL_RECORD) ,SEEK_SET);
@@ -162,6 +168,9 @@ void insert_data(char *filename, char **values)
             prev = LAST_REC_NO;
             next = 0;
             // write previous and next
+            #if WRITE_DEBUG
+                printf("New Row At : %d\n",ftell(fp));
+            #endif
             fwrite(&prev,PTR_SIZE,1,fp);
             fwrite(&next,PTR_SIZE,1,fp);
             iden = 1;
@@ -597,7 +606,7 @@ void delete_data(int argc, char **argv)
                     cout << "key =  " << s <<  " value = " << stemp <<  "\n";
                 #endif
                 
-                 cond.insert(make_pair(s,stemp));
+                cond.insert(make_pair(s,stemp));
                 
             }
                 // double cannot be compared
