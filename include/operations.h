@@ -15,6 +15,7 @@ extern int32_t             DATA_HEAD;
 extern int32_t             DATA_END;
 extern struct Column       *col;
 extern int                 *DATA_TYPES;
+extern int                 *CONST;
 extern std::string         types[6];
 extern uint                TYPE_SIZE[6];
 extern int32_t             PRIMARY_KEY_COL_NO;

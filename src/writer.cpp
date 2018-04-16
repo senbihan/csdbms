@@ -41,14 +41,14 @@ void write_timestamp(FILE *fp)
     fseek(fp,DATE_TIME_POSITION,SEEK_SET);
     time_t t = time(NULL);
     struct tm tm_inf = *localtime(&t);
-    long yy     = tm_inf.tm_year + 1900;
-    long mon    = tm_inf.tm_mon + 1;
-    long dd     = tm_inf.tm_mday;
-    long date   = yy * 10000L + mon * 100L + dd;
-    long hh     = tm_inf.tm_hour;
-    long mm     = tm_inf.tm_min;
-    long ss     = tm_inf.tm_sec;
-    LAST_MOD_TIME = ((date * 100L + hh) * 100L + mm ) * 100L + ss; 
+    long long yy     = tm_inf.tm_year + 1900;
+    long long mon    = tm_inf.tm_mon + 1;
+    long long dd     = tm_inf.tm_mday;
+    long long date   = yy * 10000L + mon * 100L + dd;
+    long long hh     = tm_inf.tm_hour;
+    long long mm     = tm_inf.tm_min;
+    long long ss     = tm_inf.tm_sec;
+    LAST_MOD_TIME = ((date * 100LL + hh) * 100LL + mm ) * 100LL + ss; 
     //printf("writing date time = %ld\n",LAST_MOD_TIME);
     fwrite(&LAST_MOD_TIME,DATE_TIME_SIZE,1,fp);
 }
@@ -219,7 +219,7 @@ char *create_db(int argc, char **args)
         // data length
         string temp_string;
         int j = 0, i_part, f_part;
-        strncpy(sizeinfo,args[k],strlen(args[k]));
+        strcpy(sizeinfo,args[k]);
         switch(type)
         {
             case INTEGER:   

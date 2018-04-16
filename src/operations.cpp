@@ -44,6 +44,26 @@ void show_schema(char *filename)
         }
         else
             printf("(%d)",int(col[i].size));
+        
+        switch(CONST[i])
+        {
+            case 0:
+                printf("\tPRIMARY KEY");
+                break;
+            case 1:
+                printf("\tNOT NULL");
+                break;
+            case 2:
+                printf("\tAUTO INCR");
+                break;
+            case 3:
+                printf("\tDEFAULT - No constraint");
+                break;
+            default:
+                printf("\tDEFAULT - No constraint");
+                break;
+        }
+        
         printf("\n");
     }
     printf("\nNumber of Records present: %d\n",NO_RECORDS);
@@ -150,10 +170,9 @@ void insert_data(char *filename, char **values)
     }
     
     // key : primary key, val = record_no_ins
-
     // Update Index call
-
     // write the data
+
     int temp;
     for(int i = 0 ; i < NO_COLUMNS ; i++)
     {
@@ -229,7 +248,7 @@ bool insert_data(int argc, char **argv)
         WARN_MESG("Invalid Syntax. Type 'help' to see all Syntax.");
         return false;
     }
-    char *values[NO_COLUMNS];
+    char **values = (char**)malloc(NO_COLUMNS*sizeof(char*));
     string stemp;
     int i, k = 4;
     bool inserted = true;
@@ -247,11 +266,12 @@ bool insert_data(int argc, char **argv)
                     inserted = false;
                 }
                 size = (unsigned int)(col[i].size >> 4) + 1;
-                if(!(strlen(argv[k]) <= size)){
+                if(!(strlen(argv[k])-1 <= size)){
                     WARN_MESG("Error : NUMBER length is too big\n");
                     inserted = false;
                 }
                 values[i] = Malloc(char,size);
+                assert(values[i] != NULL);
                 strncpy(values[i],argv[k],size);
                 
                 if(inserted && PRIMARY_KEY_COL_NO == i) // check if already exist in b+ tree
@@ -283,7 +303,7 @@ bool insert_data(int argc, char **argv)
                     WARN_MESG("Error : NUMBER length is too big\n");
                     inserted = false;
                 }
-                values[i] = Malloc(char,stemp.length());
+                values[i] = Malloc(char,(unsigned int)(col[i].size));
                 strncpy(values[i],stemp.c_str(),(unsigned int)(col[i].size));
                 break;
             case DOUBLE :
@@ -323,6 +343,7 @@ bool insert_data(int argc, char **argv)
         }
     }
     if(inserted) insert_data(filename,values);
+    free(values);
     return inserted;
 }
 

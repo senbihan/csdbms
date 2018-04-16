@@ -155,7 +155,7 @@ int read_from_file(const char *filename)
     read_total_rec();
     
 
-    #if DEBUG
+    #if READ_DEBUG
         printf("File Details: \n\n");
         printf("Records : %d\n",NO_RECORDS);
         printf("Columns : %d\n",NO_COLUMNS);
@@ -171,18 +171,23 @@ int read_from_file(const char *filename)
     assert(col != NULL);
     DATA_TYPES = Malloc(int,NO_COLUMNS);
     assert(DATA_TYPES != NULL);
+    CONST = Malloc(int,NO_COLUMNS);
+    assert(CONST != NULL);
     
     read_columns();
     PRIMARY_KEY_COL_NO = -1;
 
     for(int i = 0 ; i < NO_COLUMNS ; i++){
         DATA_TYPES[i] = get_type_int(col[i].data_type);
-        #if DEBUG
-            printf("%s \t %d\n",col[i].col_name,DATA_TYPES[i]);
+        #if READ_DEBUG
+            printf("%d ",col[i].data_type);
+            printf("%s \t %d ",col[i].col_name,DATA_TYPES[i]);
+            printf("%d \n",int(col[i].size));
         #endif
         string s(col[i].col_name);
         COL_NT[s] = DATA_TYPES[i];
-        if(get_const_int(col[i].data_type) == 0)    // 0 : primary key
+        CONST[i] = get_const_int(col[i].data_type);    // 0 : primary key
+        if(CONST[i] == 0)
             PRIMARY_KEY_COL_NO = i;
     }
     IS_READ = 1;
@@ -195,7 +200,7 @@ int read_from_file(const char *filename)
     fclose(frptr);
     
     
-    #if DEBUG
+    #if READ_DEBUG
         printf("Reading Complete..... Closing..\n");
     #endif
 

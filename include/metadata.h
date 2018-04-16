@@ -23,6 +23,7 @@ int32_t             DATA_HEAD;
 int32_t             DATA_END;
 struct Column       *col;
 int                 *DATA_TYPES;
+int                 *CONST;
 std::string         types[6] = {"", "INTEGER", "DOUBLE", "STRING", "DATE", "TIME"};
 uint                TYPE_SIZE[6]   = {0, sizeof(int), sizeof(long), sizeof(char), 0 , 0};
 int32_t             PRIMARY_KEY_COL_NO;

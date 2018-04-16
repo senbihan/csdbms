@@ -161,3 +161,10 @@ void start_session()
     free(file);
 }
 
+void end_session()
+{
+    free(DATA_TYPES);
+    free(CONST);
+    free(col);
+    //free(CUM_POS);
+}

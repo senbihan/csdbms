@@ -18,7 +18,7 @@
 #include <cstring>
 
 #define DEBUG                   0
-
+#define READ_DEBUG              0
 /*Helper Macros*/
 
 #define Malloc(T,size)          (T*)malloc(size*sizeof(T))
@@ -54,7 +54,7 @@
 /* Static Portion of the File */
 
 #define FILE_HEADER_SIZE        2
-#define DATE_TIME_SIZE          8   // may change
+#define DATE_TIME_SIZE          8   // long
 #define RECORD_NO_SIZE          4   // revised as 4
 #define COLUMN_NO_SIZE          1
 #define TABLE_NAME_SIZE         32
@@ -122,8 +122,8 @@ struct Column
 {
     char    col_name[COLUMN_NAME_SIZE]; // columnname
     byte    data_type;                  // type and constraint
-    byte    index;                      // present
     byte    size;                       // length of data
+    byte    index;                      // present
     char    auto_incr[INT_BYTE_SIZE];   // 5 byte integer
     byte    buff[8];                    // extra space
 };
