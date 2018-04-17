@@ -31,13 +31,10 @@ typedef struct {
 Parent* parentsList = (Parent*)calloc(25*N, sizeof(Parent));
 
 char* table_name_to_index(char *tablename){
-	int size = strlen(tablename) + 7;
-	char* index_file_name = (char*)malloc(size * sizeof(char));
-
-	strncpy(index_file_name,tablename,strlen(tablename));
-	index_file_name = strcat(index_file_name, "_index");
-
-	return index_file_name;
+	char ext[7] = "_index";
+    char *filename = Malloc(char,sizeof(tablename)+7);
+    strcpy(filename,tablename);
+    return strcat(filename,ext);
 }
 
 void write_index_metadata_to_file(FILE* indexFile) {
@@ -48,7 +45,7 @@ void write_index_metadata_to_file(FILE* indexFile) {
 	fwrite(&no_records, sizeof(ull), 1, indexFile);
 	fwrite(&size_of_node, sizeof(int), 1, indexFile);
 	fwrite(&root_node_number, sizeof(ull), 1, indexFile);
-	OK_MESG("index metadata written successfully.");
+	OK_MESG("index metadata written successfully.\n");
 }
 
 ull getRootNodeNumber(FILE* indexFile) {
@@ -207,13 +204,15 @@ ull indexFindUtil(Node* root, datatype key, FILE* file) {
 	return record_offset;
 }
 
-ull indexFind(datatype key, char* fileName) {
+ull indexFind(datatype key, char* tabName) {
+
+	char *fileName = table_name_to_index(tabName);
 	FILE* indexFile = fopen(fileName, "rb+");
 
 	if (NULL == indexFile) { // check ERR_NO
 		indexFile = fopen(fileName, "wb+");
 		// If file does not already exist, write metadata to newly created file
-		WARN_MESG("index file is not present. creating a new one and writing metadata...\n");
+		FAIL_MESG("index file is not present. creating a new one and writing metadata...\n");
 		write_index_metadata_to_file(indexFile);
 		fclose(indexFile);
 		return -1; // File does not exist or error opening file
@@ -592,7 +591,8 @@ bool insertUtil(Node* root, datatype key, ull recordOffset, FILE* indexFile) {
 	return true;
 }
 
-bool indexInsert(datatype key, ull recordOffset, char* fileName) {
+bool indexInsert(datatype key, ull recordOffset, char* tabName) {
+	char *fileName = table_name_to_index(tabName);
 	FILE *indexFile = fopen(fileName, "rb+");
 
 	// If file already exists, open in read/update more

@@ -8,9 +8,9 @@
 #define TRUE true
 #define FALSE false 
 
-char* table_name_to_index(char *tablename);
-bool indexInsert(datatype key, ull recordOffset, char* fileName);
-ull indexFind(datatype key, char* fileName);
+char* table_name_to_index(char *);
+bool indexInsert(datatype key, ull , char* );
+ull indexFind(datatype key, char* );
 
 
 #endif

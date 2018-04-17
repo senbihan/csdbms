@@ -47,16 +47,16 @@ void show_schema(char *filename)
         
         switch(CONST[i])
         {
-            case 0:
+            case PKEY:
                 printf("\tPRIMARY KEY");
                 break;
-            case 1:
+            case NNULL:
                 printf("\tNOT NULL");
                 break;
-            case 2:
+            case AUTO_INCR:
                 printf("\tAUTO INCR");
                 break;
-            case 3:
+            case NO_CONS:
                 printf("\tDEFAULT - No constraint");
                 break;
             default:
@@ -193,12 +193,12 @@ void insert_data(char *filename, char **values)
                 #endif
                 // convert to 5 byte representation
                 
-                fwrite(values[i],(col[i].size >> 4)+1,1,fp);
+                fwrite(values[i],sizeof(char),unsigned(col[i].size >> 4),fp);
                 // update index call
                 if(i == PRIMARY_KEY_COL_NO)
                 {
                     temp = atoi(values[i]);
-                	bool ret = indexInsert(temp,(unsigned long long)record_no_ins,table_name_to_index(TABLE_NAME));
+                	bool ret = indexInsert(temp,(unsigned long long)record_no_ins,TABLE_NAME);
             		if(ret == false)    WARN_MESG("Index File not updated!");
                 }
                 break;
@@ -274,19 +274,19 @@ bool insert_data(int argc, char **argv)
                     WARN_MESG("Error : Type mismatch \n");
                     inserted = false;
                 }
-                size = (unsigned int)(col[i].size >> 4) + 1;
-                if(!(strlen(argv[k])-1 <= size)){
+                size = (unsigned int)(col[i].size >> 4) ;
+                if(!(strlen(argv[k]) <= size)){
                     WARN_MESG("Error : NUMBER length is too big\n");
                     inserted = false;
                 }
-                values[i] = Malloc(char,size);
+                values[i] = Malloc(char,size+1);
                 assert(values[i] != NULL);
                 strncpy(values[i],argv[k],size);
                 
                 if(inserted && PRIMARY_KEY_COL_NO == i) // check if already exist in b+ tree
                 {
-                	if(indexFind(atoi(values[i]), table_name_to_index(TABLE_NAME)) > 0){
-                		WARN_MESG("PRIMARY CONSTRAINT : This key is already present");
+                	if(indexFind(atoi(values[i]), TABLE_NAME) > 0){
+                		FAIL_MESG("PRIMARY CONSTRAINT : This key is already present\n");
                 		inserted = false;
                 	}
                 }
@@ -298,22 +298,25 @@ bool insert_data(int argc, char **argv)
                 break;
 
             case STRING :
-                if(stemp[0] != '\'') { WARN_MESG("Strings must be quoted.\n"); inserted = false; }
-                while(stemp[0] == '\'' && stemp[stemp.length()-1] != '\''){
-                    if(k == argc){   
-                        WARN_MESG("Invalid Syntax. Type 'help' to see all Syntax.");
-                        inserted = false;
-                        break;
+                if(stemp != "NULL"){
+                    if(stemp[0] != '\'') { WARN_MESG("Strings must be quoted.\n"); inserted = false; }
+                    while(stemp[0] == '\'' && stemp[stemp.length()-1] != '\''){
+                        if(k == argc){   
+                            WARN_MESG("Invalid Syntax. Type 'help' to see all Syntax.");
+                            inserted = false;
+                            break;
+                        }
+                        stemp += " " + string(argv[++k]);
                     }
-                    stemp += " " + string(argv[++k]);
+                    stemp = stemp.substr(1,stemp.length()-2);
                 }
-                stemp = stemp.substr(1,stemp.length()-2);
                 if(!(stemp.length() <= (unsigned int)(col[i].size))){
                     WARN_MESG("Error : NUMBER length is too big\n");
                     inserted = false;
                 }
                 values[i] = Malloc(char,(unsigned int)(col[i].size));
                 strncpy(values[i],stemp.c_str(),(unsigned int)(col[i].size));
+                if(CONST[i] == NNULL && strcmp(values[i],"NULL") == 0)  inserted = false;
                 break;
             case DOUBLE :
                 sz                  = int(col[i].size);
@@ -553,7 +556,9 @@ void delete_data_from_db(char *filename, map<string,variant<int,string,long> >co
     for(int r_no : record_no)
         delete_data_from_rec(filename,fp, r_no);
     close_file(fp);
-    printf("%d records deleted\n",(int)record_no.size());    
+    printf("\033[0;32m");
+    printf("%d record(s) deleted\n",(int)record_no.size());    
+    printf("\033[0m");
 }
 
 
@@ -671,12 +676,12 @@ void show_data_from_db(char *filename, map<string,variant<int,string, long> >con
             switch(DATA_TYPES[j])
             {          
                 case INTEGER:
-                    fread(dest,int(col[j].size >> 4) + 1,1,fp);
-                    printf("%-20s",dest);
+                    fread(dest,int(col[j].size >> 4),1,fp);
+                    printf("%-20.*s",unsigned((col[j].size >> 4)),dest);
                     break;
                 case STRING :
                     fread(dest,sizeof(char),(int)col[j].size,fp);
-                    printf("%-20s",dest);
+                    printf("%-20.*s",(unsigned)col[j].size,dest);
                     break;
                 case DOUBLE:
                     i_part = (int(col[j].size) & 240) >> 4;
@@ -724,7 +729,7 @@ void show_data(int argc, char **argv)
             {
                 string s(argv[i]);
                 if(COL_NT.find(s) == COL_NT.end()){
-                    cout << s << "\n";
+                    //cout << s << "\n";
                     FAIL_MESG("No column of this name\n");
                     return ;
                 }

@@ -56,9 +56,10 @@ void read_column_no()
 void read_table_name()
 {
     assert(frptr != NULL);
-    TABLE_NAME = Malloc(char, TABLE_NAME_SIZE);
+    TABLE_NAME = Malloc(char, TABLE_NAME_SIZE+1);
     assert(TABLE_NAME != NULL);
     fread(TABLE_NAME,sizeof(char),TABLE_NAME_SIZE,frptr);
+    TABLE_NAME[TABLE_NAME_SIZE] = '\0';
 }
 
 void read_record_size()

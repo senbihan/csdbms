@@ -47,6 +47,12 @@
 #define DOUBLE                  2
 #define DATE                    4
 #define TIME                    5
+
+/* Constraint MAP */
+#define PKEY                    0
+#define NNULL                   1
+#define AUTO_INCR               2
+#define NO_CONS                 3
 /**
  * Size of each fields in the metadata
  * written in Bytes

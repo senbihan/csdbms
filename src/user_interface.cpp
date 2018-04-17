@@ -34,6 +34,15 @@ char* read_line()
     return buff;
 }
 
+void to_lower(char *str)
+{
+    int i = 0;
+    while(str[i] != '\0' && isalpha(str[i])){
+        str[i] = char(tolower(str[i]));
+        i++;
+    }
+}
+
 char** split_line(char *buff)
 {
     int bufsize = TOK_BUFSIZE, position = 0;
@@ -45,6 +54,7 @@ char** split_line(char *buff)
     token = strtok(buff, TOK_DELIM);
     while (token != NULL) {
         tokens[position] = token;
+        //to_lower(tokens[position]);
         position++;
 
         if (position >= bufsize) {
@@ -63,7 +73,7 @@ char** split_line(char *buff)
 int print_queries()
 {
     printf("\n\n\n");
-    printf("CREATE %5c",' ');
+    printf("create %5c",' ');
     printf(": To create a new database \n");
     printf("\n%14ccreate table <table-name>",' ');  
     printf("\n%14c<Column-1-Name> <type>(i: integer|s : string |r : real|d : date|t : time) ",' ');
@@ -71,21 +81,21 @@ int print_queries()
     printf("\n%14c<constraint>(p : primary key, n : not null, a : auto_incr)",' ');
     printf("\n%14c<Column-2-Name> ..",' ');
     printf("\n\n\n");
-    printf("DESC %7c",' ');
+    printf("desc %7c",' ');
     printf(": To describe the table.");
     printf("\n%14cdesc|describe <table-name>:  to show the schema of the table",' ');
     printf("\n\n\n");
-    printf("INSERT %5c",' ');
+    printf("insert %5c",' ');
     printf(": Inserts into database.");
     printf("\n%14cinsert into <table-name> values val1 val2 ... [according to the order of column]",' ');
     printf("\n\n\n");    
-    printf("SELECT %5c",' ');
+    printf("select %5c",' ');
     printf(": select * from <table-name> where col_i val_i ... [Only Equality and based on AND condition]");
     printf("\n\n\n");    
-    printf("DELETE %5c",' ');
+    printf("delete %5c",' ');
     printf(": delete from <table-name> where col_i val_i ... [Only Equality and based on AND condition]");
     printf("\n\n\n");
-    printf("HELP %7c",' ');
+    printf("help %7c",' ');
     printf(": 'help' to show this menu");
     printf("\n\n\n");    
     
@@ -150,7 +160,7 @@ void start_session()
     print_welcome();
     do
     {
-        printf(">>> ");
+        printf("\033[2mcsdms>> \033[0m");
         line = read_line();     
         if(line[0] == '\n') continue;   
         args = split_line(line);
@@ -166,5 +176,7 @@ void end_session()
     free(DATA_TYPES);
     free(CONST);
     free(col);
+    free(TABLE_NAME);
+    free(OPEN_FILE);
     //free(CUM_POS);
 }
